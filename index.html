@@ -1,8 +1,182 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Oblivion Squad</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oblivion Squad Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #050508;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none; /* Allows clicks to pass through to canvas later */
+        }
+        .main-title {
+            color: #ffffff;
+            font-size: 8vw;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2), 0 0 40px rgba(0, 0, 0, 0.8);
+            user-select: none;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-    Main page
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="ui-layer">
+        <h1 class="main-title">Oblivion</h1>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Resize handler to ensure full screen coverage always
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Lightning variables
+        let lightning = [];
+        let flashOpacity = 0;
+
+        class LightningBranch {
+            constructor(startX, startY, endX, endY, thickness, segments) {
+                this.points = [{x: startX, y: startY}];
+                
+                let currentX = startX;
+                let currentY = startY;
+                
+                const totalY = endY - startY;
+                const segmentHeight = totalY / segments;
+
+                for (let i = 1; i < segments; i++) {
+                    // Create natural zig-zag deviation
+                    const deviation = (Math.random() - 0.5) * 40; 
+                    currentX += deviation;
+                    currentY += segmentHeight;
+                    this.points.push({x: currentX, y: currentY});
+                }
+                this.points.push({x: endX, y: endY});
+                this.thickness = thickness;
+                this.alpha = 1;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.strokeStyle = `rgba(173, 216, 230, ${this.alpha})`;
+                ctx.lineWidth = this.thickness;
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = 'rgba(0, 191, 255, 1)';
+                ctx.beginPath();
+                ctx.moveTo(this.points[0].x, this.points[0].y);
+                
+                for (let i = 1; i < this.points.length; i++) {
+                    ctx.lineTo(this.points[i].x, this.points[i].y);
+                }
+                
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        function triggerLightning() {
+            const startX = Math.random() * canvas.width;
+            const startY = Math.random() * (canvas.height * 0.2); // Start near the top cloud area
+            const endX = startX + (Math.random() - 0.5) * 300;
+            const endY = canvas.height * 0.4 + Math.random() * (canvas.height * 0.4);
+            
+            // Main Bolt
+            lightning.push(new LightningBranch(startX, startY, endX, endY, 4, 15));
+            
+            // Optional jagged fork/branch
+            if (Math.random() > 0.4) {
+                const forkIndex = Math.floor(Math.random() * 8) + 3;
+                const forkStart = lightning[lightning.length - 1].points[forkIndex] || {x: startX, y: startY};
+                lightning.push(new LightningBranch(forkStart.x, forkStart.y, forkStart.x + (Math.random() - 0.5) * 150, forkStart.y + 150, 1.5, 6));
+            }
+
+            // Screen flash effect
+            flashOpacity = 0.3;
+        }
+
+        function drawClouds() {
+            // Dark gradient at the top to simulate heavy storm clouds
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.4);
+            gradient.addColorStop(0, '#0a0a10');
+            gradient.addColorStop(0.5, '#13131c');
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height * 0.4);
+        }
+
+        function drawAmbientFlash() {
+            if (flashOpacity > 0) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${flashOpacity})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                flashOpacity -= 0.04; // Fade out the flash rapidly
+            }
+        }
+
+        // Main Game/Animation Loop
+        function animate() {
+            // Clear canvas with a slightly blue-tinted night sky color
+            ctx.fillStyle = '#050508';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawAmbientFlash();
+            drawClouds();
+
+            // Randomly strike lightning
+            if (Math.random() < 0.015 && lightning.length === 0) {
+                triggerLightning();
+            }
+
+            // Draw and fade lightning bolts
+            for (let i = lightning.length - 1; i >= 0; i--) {
+                lightning[i].draw();
+                lightning[i].alpha -= 0.08; // Fade the bolt
+                if (lightning[i].alpha <= 0) {
+                    lightning.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
 </body>
 </html>
