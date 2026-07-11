@@ -3,259 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gaming Squad Landing Page</title>
+    <title>Oblivion - home</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body, html {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #040406;
-            font-family: 'Impact', 'Arial Black', sans-serif;
-        }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #040406; font-family: 'Impact', 'Arial Black', sans-serif; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
     </style>
 </head>
 <body>
-
     <canvas id="gameCanvas"></canvas>
-
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            generateClouds(); // Regenerate cloud positions to fit new screen sizes
-        }
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; generateClouds(); }
         window.addEventListener('resize', resizeCanvas);
+        let lightning = [], flashOpacity = 0, shimmerOffset = 0, clouds = [], activePlanes = [];
+        const PLANE_TYPES = [
+            // Width is now horizontal length, Height is vertical thickness
+            { model: 'F16', speed: 1.8, width: 60, height: 25, color: '#7a8b99', spriteUrl: '' },
+            { model: 'F22', speed: 2.5, width: 75, height: 30, color: '#5c6b73', spriteUrl: '' },
+            { model: 'SU57', speed: 2.2, width: 80, height: 32, color: '#4a5759', spriteUrl: '' },
+            { model: 'SU22', speed: 1.4, width: 65, height: 28, color: '#6b705c', spriteUrl: '' }
+        ];
 
-        // Core Variables
-        let lightning = [];
-        let flashOpacity = 0;
-        let shimmerOffset = 0; // Tracks the silver text shimmer animation
-        let clouds = [];
-
-        // Cloud Generator: Creates random overlapping soft puffs at the top
-        function generateClouds() {
-            clouds = [];
-            const cloudCount = 25; // Density of the storm front
-            for (let i = 0; i < cloudCount; i++) {
-                clouds.push({
-                    x: Math.random() * canvas.width,
-                    y: (Math.random() * canvas.height * 0.25) - 50, // Keep them clustered at the top
-                    radius: 120 + Math.random() * 150, // Large, soft overlapping radii
-                    opacity: 0.2 + Math.random() * 0.4
-                });
+        class FighterJet {
+            constructor() {
+                const config = PLANE_TYPES[Math.floor(Math.random() * PLANE_TYPES.length)];
+                this.model = config.model; this.speed = config.speed + Math.random() * 0.5; this.width = config.width; this.height = config.height; this.color = config.color;
+                this.x = canvas.width + Math.random() * 400; this.y = (canvas.height * 0.4) + Math.random() * (canvas.height * 0.45); this.angle = Math.PI*1.5; this.image = null;
+            }
+            update() { this.x -= this.speed; if (this.x < -this.width * 2) { this.x = canvas.width + Math.random() * 300; this.y = (canvas.height * 0.4) + Math.random() * (canvas.height * 0.45); } }
+            draw() {
+                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); ctx.shadowColor = 'rgba(0, 0, 0, 0.6)'; ctx.shadowBlur = 15; ctx.shadowOffsetY = 25;
+                ctx.fillStyle = this.color; ctx.beginPath(); ctx.moveTo(0, -this.height / 2); ctx.lineTo(this.width / 2, this.height * 0.1); ctx.lineTo(this.width * 0.4, this.height * 0.2); ctx.lineTo(this.width * 0.1, this.height * 0.3); ctx.lineTo(this.width * 0.15, this.height / 2); ctx.lineTo(-this.width * 0.15, this.height / 2); ctx.lineTo(-this.width * 0.1, this.height * 0.3); ctx.lineTo(-this.width * 0.4, this.height * 0.2); ctx.lineTo(-this.width / 2, this.height * 0.1); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = flashOpacity > 0 ? '#ffffff' : '#ff5500'; ctx.fillRect(-this.width * 0.06, this.height * 0.5, this.width * 0.12, 6); ctx.restore();
             }
         }
-
-        // Lightning Class
+        function spawnSquadron() { activePlanes = []; for (let i = 0; i < 5; i++) { activePlanes.push(new FighterJet()); } }
+        function generateClouds() { clouds = []; for (let i = 0; i < 25; i++) { clouds.push({ x: Math.random() * canvas.width, y: (Math.random() * canvas.height * 0.25) - 50, radius: 120 + Math.random() * 150, opacity: 0.2 + Math.random() * 0.4 }); } }
         class LightningBranch {
             constructor(startX, startY, endX, endY, thickness, segments) {
-                this.points = [{x: startX, y: startY}];
-                let currentX = startX;
-                let currentY = startY;
-                const totalY = endY - startY;
-                const segmentHeight = totalY / segments;
-
-                for (let i = 1; i < segments; i++) {
-                    const deviation = (Math.random() - 0.5) * 45; 
-                    currentX += deviation;
-                    currentY += segmentHeight;
-                    this.points.push({x: currentX, y: currentY});
-                }
-                this.points.push({x: endX, y: endY});
-                this.thickness = thickness;
-                this.alpha = 1;
+                this.points = [{x: startX, y: startY}]; let currentX = startX, currentY = startY; const totalY = endY - startY, segmentHeight = totalY / segments;
+                for (let i = 1; i < segments; i++) { currentX += (Math.random() - 0.5) * 45; currentY += segmentHeight; this.points.push({x: currentX, y: currentY}); }
+                this.points.push({x: endX, y: endY}); this.thickness = thickness; this.alpha = 1;
             }
-
-            draw() {
-                ctx.save();
-                ctx.strokeStyle = `rgba(220, 240, 255, ${this.alpha})`;
-                ctx.lineWidth = this.thickness;
-                ctx.shadowBlur = 35;
-                ctx.shadowColor = 'rgba(0, 160, 255, 1)';
-                ctx.beginPath();
-                ctx.moveTo(this.points[0].x, this.points[0].y);
-                
-                for (let i = 1; i < this.points.length; i++) {
-                    ctx.lineTo(this.points[i].x, this.points[i].y);
-                }
-                
-                ctx.stroke();
-                ctx.restore();
-            }
+            draw() { ctx.save(); ctx.strokeStyle = `rgba(220, 240, 255, ${this.alpha})`; ctx.lineWidth = this.thickness; ctx.shadowBlur = 35; ctx.shadowColor = 'rgba(0, 160, 255, 1)'; ctx.beginPath(); ctx.moveTo(this.points[0].x, this.points[0].y); for (let i = 1; i < this.points.length; i++) { ctx.lineTo(this.points[i].x, this.points[i].y); } ctx.stroke(); ctx.restore(); }
         }
-
         function triggerLightning() {
-            const startX = Math.random() * canvas.width;
-            const startY = Math.random() * (canvas.height * 0.1);
-            const endX = startX + (Math.random() - 0.5) * 250;
-            const endY = canvas.height * 0.4 + Math.random() * (canvas.height * 0.4);
-            
+            const startX = Math.random() * canvas.width, startY = Math.random() * (canvas.height * 0.1), endX = startX + (Math.random() - 0.5) * 250, endY = canvas.height * 0.4 + Math.random() * (canvas.height * 0.4);
             lightning.push(new LightningBranch(startX, startY, endX, endY, 4, 14));
-            
-            // Forking logic
-            if (Math.random() > 0.4) {
-                const forkIndex = Math.floor(Math.random() * 6) + 3;
-                const forkStart = lightning[lightning.length - 1].points[forkIndex] || {x: startX, y: startY};
-                lightning.push(new LightningBranch(forkStart.x, forkStart.y, forkStart.x + (Math.random() - 0.5) * 150, forkStart.y + 120, 1.5, 5));
-            }
-
-            flashOpacity = 0.4; // Screen flash amplitude
+            if (Math.random() > 0.4) { const forkIndex = Math.floor(Math.random() * 6) + 3; const forkStart = lightning[lightning.length - 1].points[forkIndex] || {x: startX, y: startY}; lightning.push(new LightningBranch(forkStart.x, forkStart.y, forkStart.x + (Math.random() - 0.5) * 150, forkStart.y + 120, 1.5, 5)); }
+            flashOpacity = 0.4;
         }
-
-        // Draws organic cloud formations that react to lightning flashes
         function drawClouds() {
-            ctx.save();
-            for (let cloud of clouds) {
-                const cloudGrad = ctx.createRadialGradient(
-                    cloud.x, cloud.y, 0,
-                    cloud.x, cloud.y, cloud.radius
-                );
-
-                // Base cloud colours: Dark charcoal slate blue
-                let baseColor = 'rgba(12, 12, 20, ';
-                let peakColor = 'rgba(25, 25, 38, ';
-
-                // If lightning flashes, illuminate the clouds from within
-                if (flashOpacity > 0) {
-                    baseColor = `rgba(${12 + flashOpacity * 80}, ${12 + flashOpacity * 120}, ${20 + flashOpacity * 180}, `;
-                    peakColor = `rgba(${25 + flashOpacity * 120}, ${25 + flashOpacity * 180}, ${38 + flashOpacity * 255}, `;
-                }
-
-                cloudGrad.addColorStop(0, peakColor + cloud.opacity + ')');
-                cloudGrad.addColorStop(0.5, baseColor + (cloud.opacity * 0.6) + ')');
-                cloudGrad.addColorStop(1, 'rgba(4, 4, 6, 0)'); // Dissolve smoothly into darkness
-
-                ctx.fillStyle = cloudGrad;
-                ctx.beginPath();
-                ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.restore();
+            ctx.save(); for (let cloud of clouds) { const cloudGrad = ctx.createRadialGradient(cloud.x, cloud.y, 0, cloud.x, cloud.y, cloud.radius); let baseColor = 'rgba(12, 12, 20, ', peakColor = 'rgba(25, 25, 38, '; if (flashOpacity > 0) { baseColor = `rgba(${12 + flashOpacity * 80}, ${12 + flashOpacity * 120}, ${20 + flashOpacity * 180}, `; peakColor = `rgba(${25 + flashOpacity * 120}, ${25 + flashOpacity * 180}, ${38 + flashOpacity * 255}, `; } cloudGrad.addColorStop(0, peakColor + cloud.opacity + ')'); cloudGrad.addColorStop(0.5, baseColor + (cloud.opacity * 0.6) + ')'); cloudGrad.addColorStop(1, 'rgba(4, 4, 6, 0)'); ctx.fillStyle = cloudGrad; ctx.beginPath(); ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2); ctx.fill(); } ctx.restore();
         }
-
-        // Renders the high-performance silver text with an animated metallic sheen
         function drawSilverText() {
-            ctx.save();
-            
-            // Dynamic text scaling based on screen width
-            const fontSize = Math.max(40, canvas.width * 0.08); 
-            ctx.font = `bold ${fontSize}px Impact, Arial Black, sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            const text = "SQUAD NAME";
-            const textX = canvas.width / 2;
-            const textY = canvas.height / 2;
-
-            // 1. Draw heavy ambient backdrop shadow
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-            ctx.shadowBlur = 30;
-            ctx.shadowOffsetX = 5;
-            ctx.shadowOffsetY = 10;
-
-            // 2. Create the moving silver metallic shimmer gradient across the text bounds
-            const textWidth = ctx.measureText(text).width;
-            const gradStart = textX - textWidth / 2;
-            const gradEnd = textX + textWidth / 2;
-            
-            // Loop the shimmer offset smoothly across the text frame
-            shimmerOffset += 0.008;
-            if (shimmerOffset > 2) shimmerOffset = 0;
-
-            const silverGrad = ctx.createLinearGradient(gradStart, 0, gradEnd, 0);
-            
-            // Silver tones shift based on the animated offset
-            const pos = (val) => (val + shimmerOffset) % 2;
-
-            // Wrap gradient stops smoothly to prevent hard cuts during animation loop
-            const stops = [
-                {p: 0.0, c: '#4a4a4a'}, // Dark steel
-                {p: 0.2, c: '#b8b8b8'}, // Mid silver
-                {p: 0.4, c: '#ffffff'}, // Bright white metallic highlight
-                {p: 0.5, c: '#e0e0e0'}, // Pure silver
-                {p: 0.7, c: '#7a7a7a'}, // Matte dark silver
-                {p: 1.0, c: '#4a4a4a'}  // Dark steel
-            ];
-
-            // Map stops relative to the rolling animation window
-            stops.forEach(stop => {
-                let actualPos = pos(stop.p);
-                if (actualPos <= 1) {
-                    silverGrad.addColorStop(actualPos, stop.c);
-                }
-            });
-
-            ctx.fillStyle = silverGrad;
-            ctx.fillText(text, textX, textY);
-
-            // 3. Apply a subtle glowing overlay when lightning strikes
-            if (flashOpacity > 0) {
-                ctx.shadowColor = 'rgba(173, 216, 230, 0.8)';
-                ctx.shadowBlur = 20;
-                ctx.fillStyle = `rgba(255, 255, 255, ${flashOpacity * 0.5})`;
-                ctx.fillText(text, textX, textY);
-            }
-
-            ctx.restore();
+            ctx.save(); const fontSize = Math.max(40, canvas.width * 0.08); ctx.font = `bold ${fontSize}px Impact, Arial Black, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const text = "Oblivion", textX = canvas.width / 2, textY = canvas.height / 2; ctx.shadowColor = 'rgba(0, 0, 0, 0.9)'; ctx.shadowBlur = 30; ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 10; const textWidth = ctx.measureText(text).width, gradStart = textX - textWidth / 2, gradEnd = textX + textWidth / 2; shimmerOffset += 0.008; if (shimmerOffset > 2) shimmerOffset = 0; const silverGrad = ctx.createLinearGradient(gradStart, 0, gradEnd, 0); const pos = (val) => (val + shimmerOffset) % 2; const stops = [{p: 0.0, c: '#4a4a4a'}, {p: 0.2, c: '#b8b8b8'}, {p: 0.4, c: '#ffffff'}, {p: 0.5, c: '#e0e0e0'}, {p: 0.7, c: '#7a7a7a'}, {p: 1.0, c: '#4a4a4a'}]; stops.forEach(stop => { let actualPos = pos(stop.p); if (actualPos <= 1) silverGrad.addColorStop(actualPos, stop.c); }); ctx.fillStyle = silverGrad; ctx.fillText(text, textX, textY); if (flashOpacity > 0) { ctx.shadowColor = 'rgba(173, 216, 230, 0.8)'; ctx.shadowBlur = 20; ctx.fillStyle = `rgba(255, 255, 255, ${flashOpacity * 0.5})`; ctx.fillText(text, textX, textY); } ctx.restore();
         }
-
-        function drawAmbientFlash() {
-            if (flashOpacity > 0) {
-                // Subtle blue/white atmospheric lightning glow overlay
-                ctx.fillStyle = `rgba(210, 230, 255, ${flashOpacity * 0.15})`;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                flashOpacity -= 0.03; // Smooth dimming rate
-            }
-        }
-
-        // Universal Engine Loop
+        function drawAmbientFlash() { if (flashOpacity > 0) { ctx.fillStyle = `rgba(210, 230, 255, ${flashOpacity * 0.15})`; ctx.fillRect(0, 0, canvas.width, canvas.height); flashOpacity -= 0.03; } }
         function animate() {
-            // Dark stormy backdrop fill
-            ctx.fillStyle = '#040406';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Order of depth layer rendering:
-            drawAmbientFlash(); // Background ambient flashes
-            drawClouds();       // Atmospheric cloud geometry
-
-            // Process Lightning Events
-            if (Math.random() < 0.012 && lightning.length === 0) {
-                triggerLightning();
-            }
-
-            for (let i = lightning.length - 1; i >= 0; i--) {
-                lightning[i].draw();
-                lightning[i].alpha -= 0.07;
-                if (lightning[i].alpha <= 0) {
-                    lightning.splice(i, 1);
-                }
-            }
-
-            drawSilverText(); // Text layer stays clear on top
-
-            requestAnimationFrame(animate);
+            ctx.fillStyle = '#040406'; ctx.fillRect(0, 0, canvas.width, canvas.height); drawAmbientFlash(); drawClouds();
+            if (Math.random() < 0.012 && lightning.length === 0) { triggerLightning(); }
+            for (let i = lightning.length - 1; i >= 0; i--) { lightning[i].draw(); lightning[i].alpha -= 0.07; if (lightning[i].alpha <= 0) lightning.splice(i, 1); }
+            activePlanes.forEach(plane => { plane.update(); plane.draw(); }); drawSilverText(); requestAnimationFrame(animate);
         }
-
-        // Initialize Engine
-        resizeCanvas();
-        animate();
+        resizeCanvas(); spawnSquadron(); animate();
     </script>
 </body>
 </html>
-
