@@ -1,74 +1,1654 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+    <!-- Font handler-->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Oblivion - home</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #040406; font-family: 'Impact', 'Arial Black', sans-serif; }
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #040406;
+            font-family: 'Orbitron', 'Arial Black', sans-serif;
+            touch-action: none;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        /* Sleek Floating Neon Discord Button */
+        .discord-btn {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10; /* Sits completely above the canvas layers */
+            background-color: #5865F2; /* Official Discord Blue */
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(88, 101, 242, 0.4);
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .discord-btn:hover {
+            box-shadow: 0 0 25px rgba(88, 101, 242, 0.8);
+            transform: translateX(-50%) scale(1.05);
+            background-color: #4752c4;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Real HTML link overlay for smooth, secure browser navigation -->
+    <a href="https://discord.gg/jatCRGgGFF" target="_blank" id="discordLink" class="discord-btn">
+        <!-- SVG Discord Icon built directly into the text track -->
+        <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65.41,77.46a105.23,105.23,0,0,0,32,16.29,78.1,78.1,0,0,0,6.81-11.13,68.61,68.61,0,0,1-10.74-5.15c.91-.66,1.8-1.34,2.65-2a75.53,75.53,0,0,0,72,0c.85.69,1.74,1.37,2.65,2a68.42,68.42,0,0,1-10.74,5.14,77.76,77.76,0,0,0,6.83,11.13,104.87,104.87,0,0,0,32-16.29C129.24,48.43,123.47,25.65,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.92,46,53.68,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.16,46,95.92,53,91,65.69,84.69,65.69Z"/></svg>
+        Join Our Discord
+    </a>
+
     <canvas id="gameCanvas"></canvas>
+
+    
+
+
+
+
+
+
     <script>
+        // Start of Engine Script Context
+        // ============================================================================
+        // LAYER 1: CANVAS INSTANTIATION & VARIATION SETTINGS
+        // ============================================================================
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; generateClouds(); }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            generateClouds();
+        }
         window.addEventListener('resize', resizeCanvas);
-        let lightning = [], flashOpacity = 0, shimmerOffset = 0, clouds = [], activePlanes = [];
-        const PLANE_TYPES = [
-            // Width is now horizontal length, Height is vertical thickness
-            { model: 'F16', speed: 1.8, width: 60, height: 25, color: '#7a8b99', spriteUrl: '' },
-            { model: 'F22', speed: 2.5, width: 75, height: 30, color: '#5c6b73', spriteUrl: '' },
-            { model: 'SU57', speed: 2.2, width: 80, height: 32, color: '#4a5759', spriteUrl: '' },
-            { model: 'SU22', speed: 1.4, width: 65, height: 28, color: '#6b705c', spriteUrl: '' }
+
+
+          const PLANE_TYPES = [
+            { model: 'F16', speed: 3.2, width: 65, height: 25, color: '#7a8b99', spriteUrl: '' }, // Up from 1.8
+            { model: 'F22', speed: 4.0, width: 75, height: 30, color: '#5c6b73', spriteUrl: '' }, // Up from 2.5
+            { model: 'SU57', speed: 3.6, width: 80, height: 32, color: '#4a5759', spriteUrl: '' }, // Up from 2.2
+            { model: 'SU22', speed: 2.8, width: 60, height: 28, color: '#6b705c', spriteUrl: '' }  // Up from 1.4
         ];
 
+
+        const ENEMY_NAMES = ["Rogue_One", "Viper_Squad", "Phantom", "Shadow_X", "Alpha_Jet", "Ghost_Rider"];
+
+        // ============================================================================
+        // LAYER 2: INTERACTIVE INPUT CONTROLS SYSTEM
+        // ============================================================================
+        const input = {
+            up: false, down: false, left: false, right: false,
+            shootBullet: false, shootMissile: false,
+            isTouch: false,
+            joystick: { active: false, startX: 0, startY: 0, curX: 0, curY: 0, vx: 0, vy: 0 }
+        };
+
+        let touchButtons = {
+            bullet: { x: 0, y: 0, radius: 35 },
+            missile: { x: 0, y: 0, radius: 35 }
+        };
+
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w') input.up = true;
+            if (key === 's') input.down = true;
+            if (key === 'a') input.left = true;
+            if (key === 'd') input.right = true;
+            if (e.key === 'Shift') input.shootBullet = true;
+            if (e.key === '/' || e.key === '?') {
+                if (!input.shootMissile) player.fireMissile();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w') input.up = false;
+            if (key === 's') input.down = false;
+            if (key === 'a') input.left = false;
+            if (key === 'd') input.right = false;
+            if (e.key === 'Shift') input.shootBullet = false;
+        });
+
+        window.addEventListener('touchstart', (e) => {
+            input.isTouch = true;
+            touchButtons.bullet = { x: canvas.width - 140, y: canvas.height - 70, radius: 35 };
+            touchButtons.missile = { x: canvas.width - 60, y: canvas.height - 120, radius: 35 };
+
+            for (let touch of e.touches) {
+                if (touch.clientX < canvas.width / 2 && !input.joystick.active) {
+                    input.joystick.active = true;
+                    input.joystick.startX = touch.clientX;
+                    input.joystick.startY = touch.clientY;
+                    input.joystick.curX = touch.clientX;
+                    input.joystick.curY = touch.clientY;
+                }
+                let distB = Math.hypot(touch.clientX - touchButtons.bullet.x, touch.clientY - touchButtons.bullet.y);
+                let distM = Math.hypot(touch.clientX - touchButtons.missile.x, touch.clientY - touchButtons.missile.y);
+                if (distB < touchButtons.bullet.radius) input.shootBullet = true;
+                if (distM < touchButtons.missile.radius) player.fireMissile();
+            }
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!input.joystick.active) return;
+            for (let touch of e.touches) {
+                if (touch.clientX < canvas.width / 2) {
+                    input.joystick.curX = touch.clientX;
+                    input.joystick.curY = touch.clientY;
+                    let dx = input.joystick.curX - input.joystick.startX;
+                    let dy = input.joystick.curY - input.joystick.startY;
+                    let dist = Math.hypot(dx, dy);
+                    let maxDist = 50;
+                    if (dist > maxDist) {
+                        dx = (dx / dist) * maxDist;
+                        dy = (dy / dist) * maxDist;
+                    }
+                    input.joystick.vx = dx / maxDist;
+                    input.joystick.vy = dy / maxDist;
+                }
+            }
+        });
+
+        window.addEventListener('touchend', (e) => {
+            if (e.touches.length === 0) {
+                input.joystick.active = false;
+                input.joystick.vx = 0;
+                input.joystick.vy = 0;
+                input.shootBullet = false;
+            }
+        });
+
+
+        // ============================================================================
+        // LAYER 3: GAME STATE & PROJECTILE MANAGEMENT SYSTEMS (UPGRADED)
+        // ============================================================================
+        let playerProjectiles = [];
+        let enemyProjectiles = [];
+        let globalScore = 0;
+
+        // Add  high score
+        let highScore = parseInt(localStorage.getItem('squad_high_score')) || 0;
+
+        // Helper function to check and save records
+        function checkAndUpdateHighScore() {
+            if (globalScore > highScore) {
+                highScore = globalScore;
+                // Save the new record permanently into browser storage memory
+                localStorage.setItem('squad_high_score', highScore.toString());
+            }
+        }
+
+        
+        // Game flow state tracking: 'START', 'PLAYING', 'GAMEOVER'
+        let gameState = 'START'; 
+
+        // Screen Shake & Particles
+        let explosionParticles = [];
+        let screenShakeIntensity = 0;
+
+
+
+        // Add pickups
+        let activePickups = [];
+
+        // Weapon Upgrade Global Tracking States
+        let bulletUpgradeTimer = 0; // Counts frames remaining (60 frames = 1 second)
+        let upgradedMissileStock = 0; // Stores charges remaining for upgraded missiles
+
+        class Pickup {
+            constructor() {
+                // Spawn off-screen to the right
+                this.x = canvas.width + 50;
+                // Keep them inside the active flight corridor zone
+                this.y = (canvas.height * 0.45) + Math.random() * (canvas.height * 0.4);
+                
+                this.width = 25;
+                this.height = 25;
+                
+                // Match the exact velocity of your fast foreground hills layer!
+                this.speed = 3.8; 
+                
+                // Randomly select type: 'AMMO', 'MISSILE', or 'HEALTH'
+                const types = ['AMMO', 'MISSILE', 'HEALTH'];
+                this.type = types[Math.floor(Math.random() * types.length)];
+                
+                this.markedForRemoval = false;
+                this.hoverOffset = Math.random() * Math.PI * 2; // For smooth floating animation
+            }
+
+            update() {
+                if (gameState !== 'PLAYING') return;
+
+                this.x -= this.speed;
+                this.hoverOffset += 0.05; // Drives gentle floating cycle
+
+                if (this.x < -this.width * 2) {
+                    this.markedForRemoval = true;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                // Calculate a gentle up-and-down floating variation
+                let animY = this.y + Math.sin(this.hoverOffset) * 5;
+                ctx.translate(this.x, animY);
+
+                // Assign vibrant neon glow schemes based on item type
+                let glowColor = '#00ff00'; // Green for Health
+                if (this.type === 'AMMO') glowColor = '#ffff00'; // Yellow for Double Bullets
+                if (this.type === 'MISSILE') glowColor = '#ff00ff'; // Magenta for Heavy Missiles
+
+                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = 15;
+
+                // Draw Outer Octagonal Crystal Containment Pod
+                ctx.strokeStyle = glowColor;
+                ctx.lineWidth = 2;
+                ctx.fillStyle = 'rgba(10, 15, 25, 0.75)';
+                
+                ctx.beginPath();
+                ctx.moveTo(-10, -12); ctx.lineTo(10, -12);
+                ctx.lineTo(12, -10);  ctx.lineTo(12, 10);
+                ctx.lineTo(10, 12);   ctx.lineTo(-10, 12);
+                ctx.lineTo(-12, 10);  ctx.lineTo(-12, -10);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Draw Core Tech Emblem Inside Box
+                ctx.fillStyle = glowColor;
+                ctx.font = 'bold 10px Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                let label = 'H';
+                if (this.type === 'AMMO') label = 'A';
+                if (this.type === 'MISSILE') label = 'M';
+                
+                ctx.fillText(label, 0, 1);
+                ctx.restore();
+            }
+        }
+
+
+
+
+        // Addind exhaust
+        let exhaustTrails = [];
+
+
+        // Add stars
+        let backdropStars = [];
+        const MAX_STARS = 45; // Keeps backdrop clean and fast without cluttering the screen
+
+        // Add mountains
+        let landscapeLayers = [];
+
+        function buildMountainRanges() {
+            landscapeLayers = [
+                {
+                    // Far Mountain Range: Towering, sharp, deeply jagged alpine peaks
+                    speed: 0.3,
+                    color: '#08080f', 
+                    heightVariation: 0.38, // Amplified height to make them tower into the sky
+                    peaks: [],
+                    seed: 14 // Higher seed value produces much more jagged, rocky edges
+                },
+                {
+                    // Mid Mountain Range: Medium-sized rolling ridges
+                    speed: 1.2,
+                    color: '#0b0b14', 
+                    heightVariation: 0.18,
+                    peaks: [],
+                    seed: 5
+                },
+                {
+                    // Foreground Foot-Hills Range: Low-profile, smooth ground lines
+                    speed: 3.8,
+                    color: '#0f0f1c', 
+                    heightVariation: 0.08,
+                    peaks: [],
+                    seed: 2 // Low seed value flattens and smooths out the hills
+                }
+            ];
+
+            // Procedurally map out uniform peak coordinates across screen spans
+            landscapeLayers.forEach(layer => {
+                layer.peaks = [];
+                const peakResolution = 50; 
+                const totalPoints = peakResolution + 5; 
+                
+                for (let i = 0; i < totalPoints; i++) {
+                    let baseHeight = Math.sin(i * 0.35) * Math.cos(i * 0.12 * layer.seed);
+                    
+                    // Apply extra jagged noise calculation if generating the towering far background layer
+                    let noiseFactor = (layer.seed > 10) ? 0.35 : 0.15;
+                    let noise = Math.sin(i * 2.2) * noiseFactor; 
+                    
+                    let finalizedPeakHeight = (baseHeight + noise) * 0.5 + 0.5; 
+                    layer.peaks.push(finalizedPeakHeight);
+                }
+                layer.offsetX = 0; 
+            });
+        }
+
+
+
+
+
+        class Star {
+            constructor(isInitialSpawn = false) {
+                // If spawning at launch, scatter across the whole screen. Otherwise, spawn off-screen right.
+                this.x = isInitialSpawn ? Math.random() * canvas.width : canvas.width + 10;
+                this.y = Math.random() * canvas.height;
+                
+                // Random velocity creates a multi-layered parallax depth effect
+                this.speed = 4 + Math.random() * 8;
+                
+                // Faster stars stretch longer to simulate cinematic speed-blur
+                this.length = this.speed * 2.5;
+                this.alpha = 0.2 + Math.random() * 0.5; // Distant dim stars vs closer bright ones
+            }
+
+            update() {
+                this.x -= this.speed;
+                // Recycle the star back to the right edge once it cruises off-screen left
+                if (this.x < -this.length) {
+                    this.x = canvas.width + 10;
+                    this.y = Math.random() * canvas.height;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                
+                // Draw a sharp, horizontal blurred line streak
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x + this.length, this.y);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        // Global populator hook to fill the sky at runtime bootup
+        function buildStarfield() {
+            backdropStars = [];
+            for (let i = 0; i < MAX_STARS; i++) {
+                backdropStars.push(new Star(true)); // Pass true to scatter them instantly
+            }
+        }
+
+
+
+
+        // High-Performance Aerodynamic Smoke Emitter Component
+        class SmokePuff {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                
+                // Push slightly backward and give a tiny bit of vertical drift
+                this.vx = -1.5 - Math.random() * 1.0;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                
+                // Spawn compact, then expand outward volumetrically
+                this.radius = 4 + Math.random() * 3;
+                this.maxRadius = 22 + Math.random() * 8;
+                
+                this.alpha = 0.5; // Start semi-translucent
+                this.decay = 0.015 + Math.random() * 0.01; // Dissolve speed
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Expand the smoke plume as it cools down in the air
+                if (this.radius < this.maxRadius) {
+                    this.radius += 0.3;
+                }
+                
+                this.alpha -= this.decay;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                
+                // Create a soft radial gradient so the smoke cloud looks fluffy and organic
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                grad.addColorStop(0, 'rgba(100, 115, 125, 0.6)'); // Inner warm grey core
+                grad.addColorStop(0.6, 'rgba(60, 70, 80, 0.2)');   // Outer dispersing edge
+                grad.addColorStop(1, 'rgba(4, 4, 6, 0)');          // Fades cleanly into space background
+                
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+
+
+
+
+
+
+        function isPlayerMissileOnScreen() {
+            return playerProjectiles.some(proj => proj.type === 'missile');
+        }
+
+        class Projectile {
+            constructor(x, y, speedX, type, isEnemy = false) {
+                this.x = x;
+                this.y = y;
+                this.speedX = speedX;
+                this.type = type; // 'bullet' or 'missile'
+                this.isEnemy = isEnemy;
+                
+                // Missiles now look larger and more structural than stream lasers
+                this.width = type === 'bullet' ? 14 : 32;
+                this.height = type === 'bullet' ? 4 : 10;
+                
+                // BALANCING UPDATE: Enemies have 100 health. 
+                // Bullets do 10 damage. Missiles do 50 damage (Exactly 2 hits to kill).
+                this.damage = type === 'bullet' ? 10 : 50;
+                this.markedForRemoval = false;
+            }
+
+            update() {
+                this.x += this.speedX;
+                if (this.x > canvas.width + 50 || this.x < -50) {
+                    this.markedForRemoval = true;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                if (this.type === 'bullet') {
+                    // Standard laser streaks
+                    ctx.fillStyle = this.isEnemy ? '#ff3333' : '#00ffff';
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = ctx.fillStyle;
+                    ctx.fillRect(this.x, this.y - this.height / 2, this.width, this.height);
+                } else {
+                    // VECTOR MISSILE: Renders a sleek white ordnance fuselage with a glowing red heat-cone
+                    ctx.translate(this.x, this.y);
+                    
+                    // Missile Body (Sleek Military Off-White Capsule)
+                    ctx.fillStyle = '#e6e6fa';
+                    ctx.fillRect(0, -this.height / 2, this.width - 8, this.height);
+                    
+                    // Warhead Tip (Ominous Red Triangle Pointing in flight direction)
+                    ctx.fillStyle = '#ff2200';
+                    ctx.beginPath();
+                    if (this.speedX > 0) {
+                        ctx.moveTo(this.width - 8, -this.height / 2);
+                        ctx.lineTo(this.width, 0);
+                        ctx.lineTo(this.width - 8, this.height / 2);
+                    } else {
+                        ctx.moveTo(0, -this.height / 2);
+                        ctx.lineTo(-8, 0);
+                        ctx.lineTo(0, this.height / 2);
+                    }
+                    ctx.fill();
+                    
+                    // Exhaust Flare plume behind rocket engine nozzles
+                    ctx.fillStyle = '#ffaa00';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#ff5500';
+                    if (this.speedX > 0) {
+                        ctx.fillRect(-8, -this.height / 4, 8, this.height / 2);
+                    } else {
+                        ctx.fillRect(this.width - 8, -this.height / 4, 8, this.height / 2);
+                    }
+                }
+                ctx.restore();
+            }
+        }
+
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y - rect1.height / 2 < rect2.y + rect2.height / 2 &&
+                   rect1.y + rect1.height / 2 > rect2.y - rect2.height / 2;
+        }
+
+
+        // NEW: Instantly destroys the primary target, applies radial splash damage, and hits the screen with a massive rattle shake
+        function triggerNuclearDetonation(nukeX, nukeY, directHitPlane = null) {
+            // 1. If a specific plane took the direct hit, force its health to 0 instantly!
+            if (directHitPlane) {
+                directHitPlane.hasBeenHit = true;
+                directHitPlane.health = 0;
+                createExplosion(directHitPlane.x, directHitPlane.y, '#ff4400', 45);
+            }
+
+            // 2. Spawn a massive cluster of fiery explosion particles centered on the blast point
+            createExplosion(nukeX, nukeY, '#ff1100', 90);  // Deep red nuclear core sparks
+            createExplosion(nukeX, nukeY, '#ffaa00', 50);  // Expansive orange outer shockwave ring
+            createExplosion(nukeX, nukeY, '#ffff00', 25);  // White-hot plasma points
+
+            // 3. Set the blast radius (in pixels) for nearby collateral targets
+            const blastRadius = 250; 
+            
+            // 4. Scan all active background enemy planes for splash damage
+            activePlanes.forEach(plane => {
+                // Skip the plane that already took the direct hit so we don't process it twice
+                if (plane === directHitPlane) return;
+
+                // Use geometry math to find the exact distance between the nuke and the plane
+                let distance = Math.hypot(plane.x - nukeX, plane.y - nukeY);
+                
+                if (distance <= blastRadius) {
+                    plane.hasBeenHit = true;
+                    
+                    // Proximity scaling: closer = more damage
+                    let proximityFactor = 1 - (distance / blastRadius);
+                    let nukeDamage = 50 + (proximityFactor * 50); 
+                    
+                    plane.health -= nukeDamage;
+
+                    // Trigger secondary impact sparks on surrounding planes caught in the shockwave
+                    createExplosion(plane.x, plane.y, '#ffcc00', 8);
+                    
+                    // If the collateral splash damage is enough to kill them, give them a fiery sendoff too
+                    if (plane.health <= 0) {
+                        createExplosion(plane.x, plane.y, '#ff5500', 25);
+                    }
+                }
+            });
+        }
+
+
+        // NEW: Checks if an enemy plane is caught inside a circular explosion blast wave
+        function checkRadialCollision(blastX, blastY, radius, targetPlane) {
+            // Locate the centre point of the target enemy jet
+            const targetCenterX = targetPlane.x;
+            const targetCenterY = targetPlane.y;
+            
+            // Calculate precise straight-line distance using the Pythagorean theorem
+            const distance = Math.hypot(targetCenterX - blastX, targetCenterY - blastY);
+            
+            // Collision registers true if the target is within the blast radius boundary
+            return distance <= radius;
+        }
+
+
+
+
+
+        // ============================================================================
+        // LAYER 3: PROJECTILE MANAGEMENT SYSTEMS
+        // ============================================================================
+
+        // Particle Object Blueprint Class
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                // Explode outward in a random 360-degree direction
+                const angle = Math.random() * Math.PI * 2;
+                const force = 1 + Math.random() * 4;
+                this.vx = Math.cos(angle) * force;
+                this.vy = Math.sin(angle) * force;
+                
+                this.color = color;
+                this.alpha = 1;
+                // Randomly sized fiery sparks
+                this.radius = 2 + Math.random() * 3;
+                this.decay = 0.015 + Math.random() * 0.02;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay; // Gradually fade out
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Global Trigger Function to spawn an explosion cluster
+        function createExplosion(x, y, color = '#ff5500', count = 20) {
+            for (let i = 0; i < count; i++) {
+                // Mix in fire, smoke, and spark colours
+                const colors = [color, '#ffcc00', '#ff3300', '#555555'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                explosionParticles.push(new Particle(x, y, randomColor));
+            }
+        }
+
+       
+
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y - rect1.height / 2 < rect2.y + rect2.height / 2 &&
+                   rect1.y + rect1.height / 2 > rect2.y - rect2.height / 2;
+        }
+
+        // Scans active player arrays to ensure no other missiles currently exist
+        function isPlayerMissileOnScreen() {
+            return playerProjectiles.some(proj => proj.type === 'missile');
+        }
+
+
+
+        // ============================================================================
+        // LAYER 4: ENEMY JET FLIGHT CLASS
+        // ============================================================================
+        let activePlanes = [];
+        let player;
+
+
+        // ============================================================================
+        // LAYER 4: HIGH-FIDELITY SIDE-ON ENEMY FIGHTER JETS (FIXED DRIFT)
+        // ============================================================================
         class FighterJet {
             constructor() {
                 const config = PLANE_TYPES[Math.floor(Math.random() * PLANE_TYPES.length)];
-                this.model = config.model; this.speed = config.speed + Math.random() * 0.5; this.width = config.width; this.height = config.height; this.color = config.color;
-                this.x = canvas.width + Math.random() * 400; this.y = (canvas.height * 0.4) + Math.random() * (canvas.height * 0.45); this.angle = Math.PI*1.5; this.image = null;
+                this.model = config.model;
+                this.speed = config.speed + Math.random() * 0.4;
+                this.width = config.width;
+                this.height = config.height;
+                this.color = config.color;
+                this.squadName = ENEMY_NAMES[Math.floor(Math.random() * ENEMY_NAMES.length)];
+                this.maxHealth = 100;
+                this.health = 100;
+                this.hasBeenHit = false;
+                this.x = canvas.width + Math.random() * 400;
+                this.y = (canvas.height * 0.45) + Math.random() * (canvas.height * 0.45);
+                this.angle = 0; // Fixed rotation to allow default leftward drawing
+                this.missileCooldown = Math.floor(Math.random() * 200) + 100;
             }
-            update() { this.x -= this.speed; if (this.x < -this.width * 2) { this.x = canvas.width + Math.random() * 300; this.y = (canvas.height * 0.4) + Math.random() * (canvas.height * 0.45); } }
+
+            update() {
+                if (gameState !== 'PLAYING') return;
+                
+                this.x -= this.speed;
+                if (this.x < -this.width * 2 || this.health <= 0) {
+                    if (this.health <= 0) globalScore += 100;
+                    this.reset();
+                }
+                this.missileCooldown--;
+                if (this.missileCooldown <= 0) {
+                    enemyProjectiles.push(new Projectile(this.x - 10, this.y, -9, 'missile', true));
+                    this.missileCooldown = Math.floor(Math.random() * 300) + 200;
+                }
+            }
+
+            reset() {
+                const config = PLANE_TYPES[Math.floor(Math.random() * PLANE_TYPES.length)];
+                this.model = config.model;
+                this.width = config.width;
+                this.height = config.height;
+                this.color = config.color;
+                this.squadName = ENEMY_NAMES[Math.floor(Math.random() * ENEMY_NAMES.length)];
+                this.health = 100;
+                this.hasBeenHit = false;
+                this.x = canvas.width + Math.random() * 300;
+                this.y = (canvas.height * 0.45) + Math.random() * (canvas.height * 0.45);
+            }
+
             draw() {
-                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); ctx.shadowColor = 'rgba(0, 0, 0, 0.6)'; ctx.shadowBlur = 15; ctx.shadowOffsetY = 25;
-                ctx.fillStyle = this.color; ctx.beginPath(); ctx.moveTo(0, -this.height / 2); ctx.lineTo(this.width / 2, this.height * 0.1); ctx.lineTo(this.width * 0.4, this.height * 0.2); ctx.lineTo(this.width * 0.1, this.height * 0.3); ctx.lineTo(this.width * 0.15, this.height / 2); ctx.lineTo(-this.width * 0.15, this.height / 2); ctx.lineTo(-this.width * 0.1, this.height * 0.3); ctx.lineTo(-this.width * 0.4, this.height * 0.2); ctx.lineTo(-this.width / 2, this.height * 0.1); ctx.closePath(); ctx.fill();
-                ctx.fillStyle = flashOpacity > 0 ? '#ffffff' : '#ff5500'; ctx.fillRect(-this.width * 0.06, this.height * 0.5, this.width * 0.12, 6); ctx.restore();
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetY = 25; // Shadow falls naturally beneath the belly of the jet
+
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                
+                if (this.model === 'F22' || this.model === 'SU57') {
+                    // Stealth Interceptors: Sleek side profile silhouette
+                    ctx.moveTo(-this.width * 0.5, 0); // Pointy Nose facing Left
+                    ctx.lineTo(-this.width * 0.3, -this.height * 0.15); // Cockpit canopy rise
+                    ctx.lineTo(-this.width * 0.1, -this.height * 0.2);
+                    ctx.lineTo(this.width * 0.2, -this.height * 0.1); // Fuselage spine line
+                    ctx.lineTo(this.width * 0.35, -this.height * 0.5); // Angled rear twin vertical tail fin
+                    ctx.lineTo(this.width * 0.5, -this.height * 0.5);
+                    ctx.lineTo(this.width * 0.4, 0); // Engine exhaust deck
+                    ctx.lineTo(this.width * 0.4, this.height * 0.15); // Engine bay lower curve
+                    ctx.lineTo(0, this.height * 0.1); // Main low-slung wing root under-belly profile
+                    ctx.lineTo(-this.width * 0.2, this.height * 0.05);
+                } else {
+                    // Classic Aggressor Profiles (F16 / SU22): Slender airframe with single high-profile tailfin
+                    ctx.moveTo(-this.width * 0.5, 0); // Extended radome nose cone
+                    ctx.lineTo(-this.width * 0.25, -this.height * 0.25); // Bubble canopy cockpit line
+                    ctx.lineTo(0, -this.height * 0.15); // Upper engine spine
+                    ctx.lineTo(this.width * 0.2, -this.height * 0.6); // Sharp vertical single stabilizer fin
+                    ctx.lineTo(this.width * 0.35, -this.height * 0.6);
+                    ctx.lineTo(this.width * 0.5, -this.height * 0.05); // Rear fuselage frame
+                    ctx.lineTo(this.width * 0.4, 0); // Jet exhaust engine nozzle
+                    ctx.lineTo(this.width * 0.3, this.height * 0.2); // Ventral structural strakes
+                    ctx.lineTo(-this.width * 0.1, this.height * 0.05); // Intake under-belly system
+                }
+                ctx.closePath();
+                ctx.fill();
+
+                // Detailed Metallic Cyan Cockpit Canopy Accent (Facing Left)
+                ctx.fillStyle = 'rgba(0, 200, 255, 0.7)';
+                ctx.beginPath();
+                ctx.moveTo(-this.width * 0.3, -this.height * 0.1);
+                ctx.lineTo(-this.width * 0.2, -this.height * 0.2);
+                ctx.lineTo(-this.width * 0.1, -this.height * 0.15);
+                ctx.closePath();
+                ctx.fill();
+
+                // Aggressive Afterburner Flame
+                ctx.fillStyle = '#ff3c00';
+                ctx.fillRect(this.width * 0.4, -2, 10, 4);
+                ctx.restore();
+
+                // Health Tags Overlay HUD
+                ctx.save();
+                ctx.font = 'bold 11px Arial, sans-serif';
+                ctx.fillStyle = '#ff5555';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.squadName, this.x, this.y - (this.height + 18));
+                if (this.hasBeenHit) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                    ctx.fillRect(this.x - 25, this.y - (this.height + 10), 50, 4);
+                    ctx.fillStyle = '#ff3333';
+                    ctx.fillRect(this.x - 25, this.y - (this.height + 10), 50 * (this.health / this.maxHealth), 4);
+                }
+                ctx.restore();
             }
         }
-        function spawnSquadron() { activePlanes = []; for (let i = 0; i < 5; i++) { activePlanes.push(new FighterJet()); } }
-        function generateClouds() { clouds = []; for (let i = 0; i < 25; i++) { clouds.push({ x: Math.random() * canvas.width, y: (Math.random() * canvas.height * 0.25) - 50, radius: 120 + Math.random() * 150, opacity: 0.2 + Math.random() * 0.4 }); } }
+
+
+
+
+        // ============================================================================
+        // LAYER 5: PLAYER PILOT JET & LIGHTNING ATMOSPHERE
+        // ============================================================================
+ 
+
+
+
+          // ============================================================================
+        // LAYER 5: HIGH-FIDELITY SIDE-ON F-22 PLAYER JET (EXPANSIVE ROLL MODEL)
+        // ============================================================================
+        class PlayerPlane {
+            constructor() {
+                this.x = 100; this.y = canvas.height / 2;
+                this.width = 75; this.height = 24; 
+                this.speed = 5.5;
+                this.maxHealth = 250; this.health = 250;
+                this.hasBeenHit = false;
+                this.bulletCooldown = 0;
+                
+                this.currentRoll = 0; 
+                this.targetRoll = 0;
+                this.rollSpeed = 0.15; 
+            }
+
+            update() {
+                if (this.health <= 0) return; 
+
+                this.targetRoll = 0;
+                if (input.isTouch) {
+                    this.x += input.joystick.vx * this.speed;
+                    this.y += input.joystick.vy * this.speed;
+                    if (input.joystick.vy > 0.1) this.targetRoll = 1;
+                    if (input.joystick.vy < -0.1) this.targetRoll = -1;
+                } else {
+                    if (input.up) { this.y -= this.speed; this.targetRoll = -1; }
+                    if (input.down) { this.y += this.speed; this.targetRoll = 1; }
+                    if (input.left) this.x -= this.speed;
+                    if (input.right) this.x += this.speed;
+                }
+
+                let rollDiff = this.targetRoll - this.currentRoll;
+                if (Math.abs(rollDiff) > 0.01) {
+                    this.currentRoll += rollDiff * this.rollSpeed;
+                } else {
+                    this.currentRoll = this.targetRoll;
+                }
+
+                this.x = Math.max(20, Math.min(canvas.width - this.width, this.x));
+                this.y = Math.max(canvas.height * 0.4, Math.min(canvas.height - 40, this.y));
+
+                if (this.bulletCooldown > 0) this.bulletCooldown--;
+                if (input.shootBullet && this.bulletCooldown === 0) {
+                    let visualTiltOffset = this.currentRoll * 7;
+                    if (bulletUpgradeTimer > 0) {
+                        playerProjectiles.push(new Projectile(this.x + this.width * 0.5, this.y - 6 + visualTiltOffset, 14, 'bullet'));
+                        playerProjectiles.push(new Projectile(this.x + this.width * 0.5, this.y + 12 + visualTiltOffset, 14, 'bullet'));
+                    } else {
+                        playerProjectiles.push(new Projectile(this.x + this.width * 0.5, this.y + 4 + visualTiltOffset, 14, 'bullet'));
+                    }
+                    this.bulletCooldown = 8;
+                }
+            }
+
+            fireMissile() {
+                if (this.health <= 0) return;
+                if (!isPlayerMissileOnScreen()) {
+                    let visualTiltOffset = this.currentRoll * 7;
+                    let m = new Projectile(this.x + this.width * 0.5, this.y + 6 + visualTiltOffset, 16, 'missile');
+                    if (upgradedMissileStock > 0) {
+                        m.width = 45; m.height = 14; m.damage = 100; upgradedMissileStock--; 
+                    }
+                    playerProjectiles.push(m);
+                }
+            }
+
+            draw() {
+                if (this.health <= 0) return; 
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                ctx.shadowColor = 'rgba(0, 229, 255, 0.5)';
+                ctx.shadowBlur = 15;
+
+                // FIXED EXPANSIVE ROLL TRANSFORMS: 
+                // Instead of subtracting, we ADD to the vertical height scale during rolls.
+                // This flares the wings out wider to look almost top-down when moving up/down.
+                let visualTiltOffset = this.currentRoll * 7; 
+                let sideProfileScaleY = 1.0 + (Math.abs(this.currentRoll) * 1.1); // Wings balloon out wide during banking maneuvers
+
+                ctx.fillStyle = '#00ffcc'; 
+                ctx.beginPath();
+                
+                // ADJUSTED: Tail structures (-this.height * 0.45) scaled down slightly to keep the silhouette clean
+                ctx.moveTo(this.width * 0.5, visualTiltOffset * 0.1); 
+                ctx.lineTo(this.width * 0.28, (-this.height * 0.28) + visualTiltOffset); 
+                ctx.lineTo(this.width * 0.1, (-this.height * 0.15) + visualTiltOffset); 
+                ctx.lineTo(-this.width * 0.15, (-this.height * 0.2) * sideProfileScaleY + visualTiltOffset); // Top main wing expansion line
+                ctx.lineTo(-this.width * 0.25, (-this.height * 0.45) + visualTiltOffset); // FIXED: Slightly smaller dorsal tail fin depth
+                ctx.lineTo(-this.width * 0.45, (-this.height * 0.45) + visualTiltOffset); 
+                ctx.lineTo(-this.width * 0.5, visualTiltOffset); 
+                ctx.lineTo(-this.width * 0.45, (this.height * 0.15) + visualTiltOffset); 
+                ctx.lineTo(-this.width * 0.1, (this.height * 0.2) * sideProfileScaleY + visualTiltOffset); // Bottom main wing expansion line
+                ctx.lineTo(this.width * 0.2, (this.height * 0.05) + visualTiltOffset); 
+                ctx.closePath();
+                ctx.fill();
+
+                // FIXED DETAILED COCKPIT: Changed to a glowing hot neon-orange color fill
+                ctx.fillStyle = '#ff6a00';
+                ctx.shadowColor = '#ff6a00';
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.moveTo(this.width * 0.15, -this.height * 0.15 + visualTiltOffset);
+                ctx.lineTo(this.width * 0.25, -this.height * 0.28 + visualTiltOffset);
+                ctx.lineTo(this.width * 0.28, -this.height * 0.15 + visualTiltOffset);
+                ctx.closePath();
+                ctx.fill();
+
+                // Jet Engine Exhaust Flame
+                ctx.shadowColor = '#00e5ff';
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = '#00e5ff';
+                ctx.fillRect(-this.width * 0.5, -2 + visualTiltOffset, 6, 4);
+                ctx.restore();
+
+                if (this.hasBeenHit) {
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(this.x, this.y - 30, this.width, 5);
+                    ctx.fillStyle = '#00ffcc'; ctx.fillRect(this.x, this.y - 30, this.width * (this.health / this.maxHealth), 5);
+                    ctx.restore();
+                }
+            }
+        }
+
+
+        let lightning = [];
+        let flashOpacity = 0;
+        let shimmerOffset = 0;
+        let clouds = [];
+
         class LightningBranch {
             constructor(startX, startY, endX, endY, thickness, segments) {
-                this.points = [{x: startX, y: startY}]; let currentX = startX, currentY = startY; const totalY = endY - startY, segmentHeight = totalY / segments;
-                for (let i = 1; i < segments; i++) { currentX += (Math.random() - 0.5) * 45; currentY += segmentHeight; this.points.push({x: currentX, y: currentY}); }
-                this.points.push({x: endX, y: endY}); this.thickness = thickness; this.alpha = 1;
+                this.points = [{x: startX, y: startY}];
+                let currentX = startX, currentY = startY;
+                const totalY = endY - startY, segmentHeight = totalY / segments;
+                for (let i = 1; i < segments; i++) {
+                    currentX += (Math.random() - 0.5) * 45;
+                    currentY += segmentHeight;
+                    this.points.push({x: currentX, y: currentY});
+                }
+                this.points.push({x: endX, y: endY});
+                this.thickness = thickness;
+                this.alpha = 1;
             }
-            draw() { ctx.save(); ctx.strokeStyle = `rgba(220, 240, 255, ${this.alpha})`; ctx.lineWidth = this.thickness; ctx.shadowBlur = 35; ctx.shadowColor = 'rgba(0, 160, 255, 1)'; ctx.beginPath(); ctx.moveTo(this.points[0].x, this.points[0].y); for (let i = 1; i < this.points.length; i++) { ctx.lineTo(this.points[i].x, this.points[i].y); } ctx.stroke(); ctx.restore(); }
+            draw() {
+                ctx.save(); ctx.strokeStyle = `rgba(220, 240, 255, ${this.alpha})`; ctx.lineWidth = this.thickness; ctx.shadowBlur = 35; ctx.shadowColor = 'rgba(0, 160, 255, 1)'; ctx.beginPath(); ctx.moveTo(this.points.x, this.points.y); for (let i = 1; i < this.points.length; i++) { ctx.lineTo(this.points[i].x, this.points[i].y); } ctx.stroke(); ctx.restore();
+            }
         }
+
+        // ============================================================================
+        // LAYER 6: VISUAL DISPLAY CODES & HUD BUILDERS
+        // ============================================================================
+  
+
+    
+        function spawnSquadron() {
+            activePlanes = [];
+            for (let i = 0; i < 4; i++) { activePlanes.push(new FighterJet()); }
+            player = new PlayerPlane();
+            
+            buildStarfield();
+            
+            // Procedurally sketch out dark parallax mountain coordinates
+            buildMountainRanges();
+        }
+
+
+        /*function spawnSquadron() {
+            activePlanes = [];
+            for (let i = 0; i < 4; i++) { activePlanes.push(new FighterJet()); }
+            player = new PlayerPlane();
+            
+            // Generate your fast backdrop star elements right at launch
+            buildStarfield();
+        }*/
+
+
+        function generateClouds() {
+            clouds = [];
+            for (let i = 0; i < 25; i++) {
+                clouds.push({
+                    x: Math.random() * canvas.width,
+                    y: (Math.random() * canvas.height * 0.22) - 50,
+                    radius: 120 + Math.random() * 150,
+                    opacity: 0.2 + Math.random() * 0.35
+                });
+            }
+        }
+
         function triggerLightning() {
             const startX = Math.random() * canvas.width, startY = Math.random() * (canvas.height * 0.1), endX = startX + (Math.random() - 0.5) * 250, endY = canvas.height * 0.4 + Math.random() * (canvas.height * 0.4);
             lightning.push(new LightningBranch(startX, startY, endX, endY, 4, 14));
-            if (Math.random() > 0.4) { const forkIndex = Math.floor(Math.random() * 6) + 3; const forkStart = lightning[lightning.length - 1].points[forkIndex] || {x: startX, y: startY}; lightning.push(new LightningBranch(forkStart.x, forkStart.y, forkStart.x + (Math.random() - 0.5) * 150, forkStart.y + 120, 1.5, 5)); }
             flashOpacity = 0.4;
         }
+
         function drawClouds() {
             ctx.save(); for (let cloud of clouds) { const cloudGrad = ctx.createRadialGradient(cloud.x, cloud.y, 0, cloud.x, cloud.y, cloud.radius); let baseColor = 'rgba(12, 12, 20, ', peakColor = 'rgba(25, 25, 38, '; if (flashOpacity > 0) { baseColor = `rgba(${12 + flashOpacity * 80}, ${12 + flashOpacity * 120}, ${20 + flashOpacity * 180}, `; peakColor = `rgba(${25 + flashOpacity * 120}, ${25 + flashOpacity * 180}, ${38 + flashOpacity * 255}, `; } cloudGrad.addColorStop(0, peakColor + cloud.opacity + ')'); cloudGrad.addColorStop(0.5, baseColor + (cloud.opacity * 0.6) + ')'); cloudGrad.addColorStop(1, 'rgba(4, 4, 6, 0)'); ctx.fillStyle = cloudGrad; ctx.beginPath(); ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2); ctx.fill(); } ctx.restore();
         }
+
+// might not work here
+
+function drawLandscapeRanges() {
+            ctx.save();
+            
+            // Define unique vertical starting baselines for each layer
+            // Layer 0 (Far) is high, Layer 1 (Mid) is lower, Layer 2 (Front) is lowest
+            const layerBaselines = [
+                canvas.height * 0.45, // Far peaks start higher up
+                canvas.height * 0.65, // Mid rolling hills step down
+                canvas.height * 0.78  // Foreground soft foothills stay very low
+            ];
+            
+            landscapeLayers.forEach((layer, index) => {
+                if (gameState === 'PLAYING') {
+                    layer.offsetX -= layer.speed;
+                }
+
+                ctx.fillStyle = layer.color;
+                
+                if (flashOpacity > 0) {
+                    ctx.shadowColor = 'rgba(120, 160, 255, 0.15)';
+                    ctx.shadowBlur = 20;
+                }
+
+                ctx.beginPath();
+                
+                const segmentWidth = canvas.width / 45; 
+                const startY = layerBaselines[index]; // Apply the specific baseline for this layer
+                
+                for (let i = 0; i < layer.peaks.length; i++) {
+                    const currentX = (i * segmentWidth) + layer.offsetX;
+                    
+                    // We also scale the mountain height multiplier relative to screen width 
+                    // to prevent them from stretching vertically on tall screens
+                    const currentY = startY + (layer.peaks[i] * canvas.height * layer.heightVariation);
+                    
+                    if (i === 0) {
+                        ctx.moveTo(currentX, currentY);
+                    } else {
+                        ctx.lineTo(currentX, currentY);
+                    }
+                }
+
+                ctx.lineTo(canvas.width + 300, canvas.height);
+                ctx.lineTo(-300, canvas.height);
+                ctx.closePath();
+                ctx.fill();
+
+                if (layer.offsetX < -segmentWidth) {
+                    layer.offsetX = 0;
+                    let firstPeak = layer.peaks.shift();
+                    layer.peaks.push(firstPeak);
+                }
+            });
+            
+            ctx.restore();
+        }
+
+
+
         function drawSilverText() {
-            ctx.save(); const fontSize = Math.max(40, canvas.width * 0.08); ctx.font = `bold ${fontSize}px Impact, Arial Black, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const text = "Oblivion", textX = canvas.width / 2, textY = canvas.height / 2; ctx.shadowColor = 'rgba(0, 0, 0, 0.9)'; ctx.shadowBlur = 30; ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 10; const textWidth = ctx.measureText(text).width, gradStart = textX - textWidth / 2, gradEnd = textX + textWidth / 2; shimmerOffset += 0.008; if (shimmerOffset > 2) shimmerOffset = 0; const silverGrad = ctx.createLinearGradient(gradStart, 0, gradEnd, 0); const pos = (val) => (val + shimmerOffset) % 2; const stops = [{p: 0.0, c: '#4a4a4a'}, {p: 0.2, c: '#b8b8b8'}, {p: 0.4, c: '#ffffff'}, {p: 0.5, c: '#e0e0e0'}, {p: 0.7, c: '#7a7a7a'}, {p: 1.0, c: '#4a4a4a'}]; stops.forEach(stop => { let actualPos = pos(stop.p); if (actualPos <= 1) silverGrad.addColorStop(actualPos, stop.c); }); ctx.fillStyle = silverGrad; ctx.fillText(text, textX, textY); if (flashOpacity > 0) { ctx.shadowColor = 'rgba(173, 216, 230, 0.8)'; ctx.shadowBlur = 20; ctx.fillStyle = `rgba(255, 255, 255, ${flashOpacity * 0.5})`; ctx.fillText(text, textX, textY); } ctx.restore();
+            ctx.save();
+            
+            // ========================================================================
+            // LINE 1: SPLIT-SYMMETRIC UNICODE TITLE (PERFECT CENTER ALIGNMENT)
+            // ========================================================================
+            const titleFontSize = Math.max(26, canvas.width * 0.08);
+            const textX = canvas.width / 2;
+            const textY = canvas.height * 0.22;
+            
+            // Split the tag into its geometric components
+            const leftWing   = "┈━═⇋";
+            const coreName   = "〄ɓɭٱ۷ٱѻמ";
+            const rightWing  = "⇌═━┈";
+            
+            // Unified System Font Stack for stable character rendering
+            const fontStack = `bold ${titleFontSize}px "Segoe UI Symbol", "Apple Color Emoji", "Malgun Gothic", "Arial", sans-serif`;
+            ctx.font = fontStack;
+            ctx.textBaseline = 'middle'; // Forces browser to align elements by their true center line
+            
+            // Measure the exact pixel width of each section to calculate flawless spacing layout
+            const leftWidth  = ctx.measureText(leftWing).width;
+            const coreWidth  = ctx.measureText(coreName).width;
+            const rightWidth = ctx.measureText(rightWing).width;
+            
+            const totalTitleWidth = leftWidth + coreWidth + rightWidth;
+            
+            // Calculate our absolute starting point on the left side of the canvas
+            let currentX = textX - (totalTitleWidth / 2);
+
+            // Shimmer Linear Gradient Animation Loop
+            shimmerOffset += 0.006;
+            if (shimmerOffset > 2) shimmerOffset = 0;
+            const silverGrad = ctx.createLinearGradient(currentX, 0, currentX + totalTitleWidth, 0);
+            const pos = (val) => (val + shimmerOffset) % 2;
+            const stops = [{p: 0.0, c: '#4a4a4a'}, {p: 0.2, c: '#b8b8b8'}, {p: 0.4, c: '#ffffff'}, {p: 0.5, c: '#e0e0e0'}, {p: 0.7, c: '#7a7a7a'}, {p: 1.0, c: '#4a4a4a'}];
+            stops.forEach(stop => { let actualPos = pos(stop.p); if (actualPos <= 1) silverGrad.addColorStop(actualPos, stop.c); });
+
+            ctx.fillStyle = silverGrad;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+            ctx.shadowBlur = 25;
+            ctx.shadowOffsetX = 4;
+            ctx.shadowOffsetY = 8;
+
+            // --------------------------------------------------------------------
+            // MICRO-TUNING CONTROLLERS:
+            // Adjust these values (e.g., 1, 2, -1, -2) to nudge the side bars
+            // up or down by individual pixels until they line up flawlessly!
+            // --------------------------------------------------------------------
+            const leftWingYOffset = 1;  // Moves left lines down by 1 pixel
+            const rightWingYOffset = 1; // Moves right lines down by 1 pixel
+
+            // DRAW SECTION 1: Left Wing
+            ctx.textAlign = 'left';
+            // font for left
+            //ctx.font = `bold ${titleFontSize}px "Arial", "Arial Black", sans-serif`;
+
+            ctx.fillText(leftWing, currentX, textY + leftWingYOffset);
+            currentX += leftWidth; // Move pencil to the right
+
+            // DRAW SECTION 2: Core Squad Name (Perfect baseline center anchor)
+            ctx.fillText(coreName, currentX, textY);
+            currentX += coreWidth; // Move pencil to the right
+
+            // DRAW SECTION 3: Right Wing
+            ctx.fillText(rightWing, currentX, textY + rightWingYOffset);
+
+            // ========================================================================
+            // LINE 2: THE SUBTITLE DIVISION TAG
+            // ========================================================================
+            const subtitleFontSize = Math.max(14, canvas.width * 0.015);
+            const subtitleY = textY + (titleFontSize * 0.8) + 20;
+            const subtitleText = "[⇋〄⇌]";
+            
+            //ctx.font = `bold ${subtitleFontSize}px "Impact", "Arial Black", sans-serif`;
+            ctx.font = `${subtitleFontSize}px "Arial", "Arial Black", sans-serif`;
+            ctx.fillStyle = '#00e5ff'; // Neon Cyan accent
+            
+            ctx.shadowColor = '#00e5ff';
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.textAlign = 'center';
+            
+            ctx.fillText(subtitleText, textX, subtitleY);
+            
+            ctx.restore();
         }
-        function drawAmbientFlash() { if (flashOpacity > 0) { ctx.fillStyle = `rgba(210, 230, 255, ${flashOpacity * 0.15})`; ctx.fillRect(0, 0, canvas.width, canvas.height); flashOpacity -= 0.03; } }
-        function animate() {
-            ctx.fillStyle = '#040406'; ctx.fillRect(0, 0, canvas.width, canvas.height); drawAmbientFlash(); drawClouds();
-            if (Math.random() < 0.012 && lightning.length === 0) { triggerLightning(); }
-            for (let i = lightning.length - 1; i >= 0; i--) { lightning[i].draw(); lightning[i].alpha -= 0.07; if (lightning[i].alpha <= 0) lightning.splice(i, 1); }
-            activePlanes.forEach(plane => { plane.update(); plane.draw(); }); drawSilverText(); requestAnimationFrame(animate);
+
+
+// might not work here
+
+/*
+function drawSilverText() {
+            ctx.save();
+            
+            // ========================================================================
+            // LINE 1: COMPLEX UNICODE SQUAD NAME
+            // ========================================================================
+            // Because the tag is long, we scale the font size down slightly to keep it responsive
+            const titleFontSize = Math.max(26, canvas.width * 0.05);
+            const textX = canvas.width / 2;
+            const textY = canvas.height * 0.22;
+            
+            // Your exact funky squad tag loaded cleanly into a single string
+            const text = "┈━═⇋〄ɓɭٱ۷ٱѻמ⇌═━┈";
+            
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // UNIVERSAL SYSTEM FALLBACK STACK:
+            // "Segoe UI Symbol" and "Apple Color Emoji" provide native support for complex symbols.
+            // "Arial" acts as the clean global backup structure.
+            ctx.font = `bold ${titleFontSize}px "Segoe UI Symbol", "Apple Color Emoji", "Malgun Gothic", "Arial", sans-serif`;
+            
+            // Measure the exact width of the funky text string to lock down the silver shimmer scale
+            const textWidth = ctx.measureText(text).width;
+            const gradStart = textX - textWidth / 2;
+            const gradEnd = textX + textWidth / 2;
+            
+            // Animate the silver scrolling highlight frame
+            shimmerOffset += 0.006;
+            if (shimmerOffset > 2) shimmerOffset = 0;
+            
+            const silverGrad = ctx.createLinearGradient(gradStart, 0, gradEnd, 0);
+            const pos = (val) => (val + shimmerOffset) % 2;
+            const stops = [
+                {p: 0.0, c: '#4a4a4a'}, {p: 0.2, c: '#b8b8b8'}, {p: 0.4, c: '#ffffff'},
+                {p: 0.5, c: '#e0e0e0'}, {p: 0.7, c: '#7a7a7a'}, {p: 1.0, c: '#4a4a4a'}
+            ];
+            stops.forEach(stop => {
+                let actualPos = pos(stop.p);
+                if (actualPos <= 1) silverGrad.addColorStop(actualPos, stop.c);
+            });
+            
+            // Heavy background shadow to make the intricate lines of the symbols stand out
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+            ctx.shadowBlur = 25;
+            ctx.shadowOffsetX = 4;
+            ctx.shadowOffsetY = 8;
+            
+            ctx.fillStyle = silverGrad;
+            ctx.fillText(text, textX, textY);
+            
+            // ========================================================================
+            // LINE 2: THE SUBTITLE SQUAD SLOGAN
+            // ========================================================================
+            const subtitleFontSize = Math.max(14, canvas.width * 0.015);
+            const subtitleY = textY + (titleFontSize * 0.8) + 20;
+            const subtitleText = "[⇋〄⇌]";
+            
+            // The subtitle doesn't use complex symbols, so it can use a clean, standard font
+            ctx.font = `bold ${subtitleFontSize}px "Impact", "Arial Black", sans-serif`;
+            ctx.fillStyle = '#00e5ff'; // Vibrant neon cyan accent glow
+            
+            ctx.shadowColor = '#00e5ff';
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            ctx.fillText(subtitleText, textX, subtitleY);
+            
+            ctx.restore();
         }
-        resizeCanvas(); spawnSquadron(); animate();
-    </script>
+*/
+
+/*
+        function drawSilverText() {
+            ctx.save(); const fontSize = Math.max(36, canvas.width * 0.07); ctx.font = `bold ${fontSize}px Orbitron, Arial Black, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const text = "┈━═⇋ 〄blivion ⇌═━┈", textX = canvas.width / 2, textY = canvas.height * 0.25; ctx.shadowColor = 'rgba(0, 0, 0, 0.9)'; ctx.shadowBlur = 30; ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 10; const textWidth = ctx.measureText(text).width, gradStart = textX - textWidth / 2, gradEnd = textX + textWidth / 2; shimmerOffset += 0.006; if (shimmerOffset > 2) shimmerOffset = 0; const silverGrad = ctx.createLinearGradient(gradStart, 0, gradEnd, 0); const pos = (val) => (val + shimmerOffset) % 2; const stops = [{p: 0.0, c: '#4a4a4a'}, {p: 0.2, c: '#b8b8b8'}, {p: 0.4, c: '#ffffff'}, {p: 0.5, c: '#e0e0e0'}, {p: 0.7, c: '#7a7a7a'}, {p: 1.0, c: '#4a4a4a'}]; stops.forEach(stop => { let actualPos = pos(stop.p); if (actualPos <= 1) silverGrad.addColorStop(actualPos, stop.c); }); ctx.fillStyle = silverGrad; ctx.fillText(text, textX, textY); ctx.restore();
+        }*/
+
+        function drawScore() {
+            ctx.save(); ctx.font = 'bold 24px Impact, Arial Black, sans-serif'; ctx.fillStyle = '#ffffff'; ctx.shadowBlur = 10; ctx.shadowColor = '#00ffff'; ctx.textAlign = 'right'; ctx.fillText(`SCORE: ${globalScore}`, canvas.width - 30, 40); ctx.restore();
+        }
+
+        function drawAmbientFlash() { if (flashOpacity > 0) { ctx.fillStyle = `rgba(210, 230, 255, ${flashOpacity * 0.12})`; ctx.fillRect(0, 0, canvas.width, canvas.height); flashOpacity -= 0.025; } }
+
+        function drawMobileControls() {
+            if (!input.isTouch) return;
+            ctx.save(); ctx.globalAlpha = 0.35;
+            if (input.joystick.active) {
+                ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(input.joystick.startX, input.joystick.startY, 50, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = '#00e5ff'; ctx.beginPath(); ctx.arc(input.joystick.startX + (input.joystick.vx * 50), input.joystick.startY + (input.joystick.vy * 50), 20, 0, Math.PI*2); ctx.fill();
+            }
+            ctx.fillStyle = '#00ffff'; ctx.beginPath(); ctx.arc(touchButtons.bullet.x, touchButtons.bullet.y, touchButtons.bullet.radius, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#ff9900'; ctx.beginPath(); ctx.arc(touchButtons.missile.x, touchButtons.missile.y, touchButtons.missile.radius, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+        }
+
+
+        function drawLowHealthWarning() {
+            // Check if player is alive and health has dipped below 25% of maximum gauge pool
+            if (gameState === 'PLAYING' && player.health > 0 && player.health < (player.maxHealth * 0.25)) {
+                ctx.save();
+                
+                // 1. DYNAMIC SINE WAVE PULSE FACTOR
+                // Uses the current system timestamp to create a smooth, rhythmic heartbeat pulse rate
+                const pulseFactor = Math.sin(Date.now() * 0.007) * 0.5 + 0.5; // Normalizes values cleanly between 0 and 1
+                
+                // 2. RENDER AMBIENT RED VIGNETTE COCKPIT SHROUD
+                // Creates a radial gradient that paints a pulsing crimson border around outer screen frames
+                const vignetteGrad = ctx.createRadialGradient(
+                    canvas.width / 2, canvas.height / 2, canvas.width * 0.3,
+                    canvas.width / 2, canvas.height / 2, canvas.width * 0.7
+                );
+                vignetteGrad.addColorStop(0, 'rgba(0, 0, 0, 0)'); // Center screen stays completely clear
+                vignetteGrad.addColorStop(1, `rgba(200, 0, 0, ${pulseFactor * 0.35})`); // Outer frame edge blooms crimson
+                
+                ctx.fillStyle = vignetteGrad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 3. DRAW FLASHING TEXT ALERT INTERACTION HUB
+                // Renders flashing tactical warning lines right underneath your main score HUD
+                ctx.font = 'bold 16px Impact, sans-serif';
+                ctx.fillStyle = `rgba(255, 50, 50, ${0.4 + pulseFactor * 0.6})`; // Blinks smoothly between dim red and glowing bright red
+                ctx.textAlign = 'right';
+                ctx.shadowColor = '#ff0000';
+                ctx.shadowBlur = 10 * pulseFactor; // Text glow grows and shrinks in sync with the pulse
+                
+                ctx.fillText('WARNING: CRITICAL HEALTH', canvas.width - 30, 125);
+                ctx.restore();
+            }
+        }
+
+
+       /* function drawStartScreen() {
+            ctx.save();
+            // Semitransparent background panel dimming the background storm clouds
+            //ctx.fillStyle = 'rgba(4, 4, 6, 0.7)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = '20px Arial, sans-serif';
+            ctx.fillStyle = '#a0a0aa';
+            ctx.textAlign = 'center';
+            ctx.fillText('MOVE: W,S,A,D  |  BULLET: SHIFT  |  MISSILE: /', canvas.width / 2, canvas.height / 2 + 50);
+
+            // Draw a styled glowing interactive execution button
+            const btnW = 200, btnH = 50;
+            const btnX = canvas.width / 2 - btnW / 2, btnY = canvas.height / 2 + 100;
+            
+            ctx.fillStyle = '#00ffcc';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00ffcc';
+            ctx.fillRect(btnX, btnY, btnW, btnH);
+
+            ctx.font = 'bold 22px Impact, sans-serif';
+            ctx.fillStyle = '#040406';
+            ctx.shadowBlur = 0;
+            ctx.fillText('LAUNCH MISSION', canvas.width / 2, btnY + 32);
+            ctx.restore();
+        }*/
+
+        function drawStartScreen() {
+            ctx.save();
+            // Stays completely transparent so you can fully see the title and stars
+            ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = '20px Arial, sans-serif';
+            ctx.fillStyle = '#a0a0aa';
+            ctx.textAlign = 'center';
+            ctx.fillText('MOVE: W,S,A,D  |  BULLET: SHIFT  |  MISSILE: /', canvas.width / 2, canvas.height / 2 + 50);
+
+            // Button tracking coordinates
+            const btnW = 200, btnH = 50;
+            const btnX = canvas.width / 2 - btnW / 2, btnY = canvas.height / 2 + 100;
+            
+            // 1. DRAW BUTTON CORE BACKGROUND
+            ctx.fillStyle = '#040406'; // Dark matte center container core
+            ctx.fillRect(btnX, btnY, btnW, btnH);
+
+            // 2. DRAW HIGH-ENERGY NEON GLOWING BORDER
+            ctx.strokeStyle = '#00ffcc'; // Neon Cyan accent
+            ctx.lineWidth = 3; // Sharp, distinct border thickness
+            
+            // Layer an active neon shadow glow track right onto the outline stroke
+            ctx.shadowColor = '#00ffcc';
+            ctx.shadowBlur = 15;
+            
+            ctx.strokeRect(btnX, btnY, btnW, btnH); // Paints the glowing perimeter outline
+            ctx.shadowBlur = 0; // Turn off glow effects immediately for standard font passes
+
+            // 3. DRAW INNER BUTTON BUTTON TEXT
+            ctx.font = 'bold 20px Impact, sans-serif';
+            ctx.fillStyle = '#00ffcc'; // Text color matches the glowing outline frame
+            ctx.fillText('LAUNCH MISSION', canvas.width / 2, btnY + 32);
+            ctx.restore();
+        }
+
+
+
+
+        function drawGameOverScreen() {
+            ctx.save();
+            ctx.fillStyle = 'rgba(20, 4, 4, 0.85)'; // Blood red overlay tint
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = 'bold 7vw Impact, Arial Black, sans-serif';
+            ctx.fillStyle = '#ff3333';
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = '#ff0000';
+            ctx.textAlign = 'center';
+            ctx.fillText('MISSION FAILED', canvas.width / 2, canvas.height / 2 - 80);
+
+            // Display Current Run Score
+            ctx.font = '24px Impact, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowBlur = 0;
+            ctx.fillText(`FINAL SCORE: ${globalScore}`, canvas.width / 2, canvas.height / 2 - 10);
+
+            // NEW: Display Local Storage Personal Best with a golden glow accent
+            ctx.font = 'bold 26px Impact, sans-serif';
+            ctx.fillStyle = '#ffcc00';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#ffcc00';
+            ctx.fillText(`PERSONAL BEST: ${highScore}`, canvas.width / 2, canvas.height / 2 + 30);
+            ctx.shadowBlur = 0; // Reset blur for structural button components
+
+            // Restart Trigger Button outline
+            const btnW = 180, btnH = 45;
+            const btnX = canvas.width / 2 - btnW / 2, btnY = canvas.height / 2 + 90;
+            
+            ctx.fillStyle = '#ff3333';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#ff3333';
+            ctx.fillRect(btnX, btnY, btnW, btnH);
+
+            ctx.font = 'bold 18px Impact, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowBlur = 0;
+            ctx.fillText('TRY AGAIN', canvas.width / 2, btnY + 28);
+            ctx.restore();
+        }
+
+        // Global Event Router to catch clicks on HUD layout panels
+        window.addEventListener('click', (e) => {
+            const mX = e.clientX;
+            const mY = e.clientY;
+            
+            if (gameState === 'START') {
+                const btnX = canvas.width / 2 - 100, btnY = canvas.height / 2 + 100;
+                if (mX >= btnX && mX <= btnX + 200 && mY >= btnY && mY <= btnY + 50) {
+                    resetFullEngine();
+                    gameState = 'PLAYING';
+                }
+            } else if (gameState === 'GAMEOVER') {
+                const btnX = canvas.width / 2 - 90, btnY = canvas.height / 2 + 80;
+                if (mX >= btnX && mX <= btnX + 180 && mY >= btnY && mY <= btnY + 45) {
+                    resetFullEngine();
+                    gameState = 'PLAYING';
+                }
+            }
+        });
+
+        function resetFullEngine() {
+            globalScore = 0;
+            playerProjectiles = [];
+            enemyProjectiles = [];
+            explosionParticles = [];
+            player.health = player.maxHealth;
+            player.hasBeenHit = false;
+            player.x = 100;
+            player.y = canvas.height / 2;
+            activePlanes.forEach(p => p.reset());
+        }
+
+
+        let playerDeathTimer = 0;
+
+// ============================================================================
+// LAYER 7: CENTRAL LOOP WITH DYNAMIC SOCIALS VISIBILITY (FINAL MASTER EDITION)
+// ============================================================================
+function animate() {
+    ctx.fillStyle = '#040406';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Screen Shake Calculation Matrices
+    ctx.save();
+    if (screenShakeIntensity > 0) {
+        ctx.translate((Math.random() - 0.5) * screenShakeIntensity, (Math.random() - 0.5) * screenShakeIntensity);
+        screenShakeIntensity *= 0.9;
+        if (screenShakeIntensity < 0.2) screenShakeIntensity = 0;
+    }
+
+    // Draw Background Atmosphere Layers
+    drawAmbientFlash();
+    
+    backdropStars.forEach(star => {
+        star.update();
+        star.draw();
+    });
+
+    drawClouds(); 
+    drawLandscapeRanges();
+
+    if (Math.random() < 0.008 && lightning.length === 0) triggerLightning();
+    for (let i = lightning.length - 1; i >= 0; i--) {
+        lightning[i].draw(); lightning[i].alpha -= 0.06;
+        if (lightning[i].alpha <= 0) lightning.splice(i, 1);
+    }
+
+    // Global Asset Clean-up passes
+    playerProjectiles.forEach(p => p.update());
+    enemyProjectiles.forEach(p => p.update());
+    playerProjectiles = playerProjectiles.filter(p => !p.markedForRemoval);
+    enemyProjectiles = enemyProjectiles.filter(p => !p.markedForRemoval);
+
+    explosionParticles.forEach(p => p.update());
+    explosionParticles = explosionParticles.filter(p => p.alpha > 0);
+
+    exhaustTrails.forEach(t => t.update());
+    exhaustTrails = exhaustTrails.filter(t => t.alpha > 0);
+
+    activePickups.forEach(p => p.update());
+    activePickups = activePickups.filter(p => !p.markedForRemoval);
+
+    // Live Combat Simulation Engine Block
+    if (gameState === 'PLAYING' || playerDeathTimer > 0) {
+        if (playerDeathTimer === 0) {
+            let visualTiltOffset = player.currentRoll * 7;
+            exhaustTrails.push(new SmokePuff(player.x - player.width * 0.5, player.y + visualTiltOffset));
+
+            if (Math.random() < 0.002 && activePickups.length < 2) {
+                activePickups.push(new Pickup());
+            }
+
+            activePlanes.forEach(plane => {
+                plane.update();
+                
+                let playerRect = { x: player.x, y: player.y - player.height/2, width: player.width, height: player.height };
+                let enemyRect = { x: plane.x, y: plane.y - plane.height/2, width: plane.width, height: plane.height };
+                
+                if (checkCollision(playerRect, enemyRect)) {
+                    createExplosion(player.x, player.y, '#ffaa00', 45); 
+                    player.health = 0;
+                    player.hasBeenHit = true;
+                    plane.health = 0;
+                    screenShakeIntensity = 30;
+                    playerDeathTimer = 45; 
+                    if (navigator.vibrate) navigator.vibrate();
+                }
+
+                playerProjectiles.forEach(proj => {
+                    if (checkCollision(proj, plane)) {
+                        proj.markedForRemoval = true;
+                        if (proj.type === 'missile' && proj.width > 40) {
+                            triggerNuclearDetonation(proj.x, proj.y, plane);
+                            screenShakeIntensity = Math.max(screenShakeIntensity, 40);
+                        } else {
+                            plane.hasBeenHit = true;
+                            plane.health -= proj.damage;
+                            createExplosion(proj.x, proj.y, '#00ffff', 5);
+                            if (plane.health <= 0) {
+                                createExplosion(plane.x, plane.y, '#ff5500', 35);
+                                screenShakeIntensity = Math.max(screenShakeIntensity, 10);
+                            }
+                        }
+                    }
+                });
+            });
+
+            player.update();
+
+            activePickups.forEach(pod => {
+                let playerRect = { x: player.x, y: player.y - player.height/2, width: player.width, height: player.height };
+                let podRect = { x: pod.x, y: pod.y - pod.height/2, width: pod.width, height: pod.height };
+                if (checkCollision(playerRect, podRect)) {
+                    pod.markedForRemoval = true;
+                    if (pod.type === 'HEALTH') {
+                        player.health = Math.min(player.maxHealth, player.health + player.maxHealth * 0.3);
+                        createExplosion(pod.x, pod.y, '#00ff00', 15);
+                    } else if (pod.type === 'AMMO') {
+                        bulletUpgradeTimer += 600;
+                        createExplosion(pod.x, pod.y, '#ffff00', 15);
+                    } else if (pod.type === 'MISSILE') {
+                        upgradedMissileStock += 5;
+                        createExplosion(pod.x, pod.y, '#ff00ff', 15);
+                    }
+                    if (navigator.vibrate) navigator.vibrate();
+                }
+            });
+
+            enemyProjectiles.forEach(proj => {
+                if (checkCollision(proj, player)) {
+                    player.hasBeenHit = true;
+                    player.health -= proj.damage;
+                    proj.markedForRemoval = true;
+                    createExplosion(proj.x, proj.y, '#ff3333', 12);
+                    screenShakeIntensity = Math.max(screenShakeIntensity, 15);
+                    if (navigator.vibrate) navigator.vibrate(120);
+
+                    if (player.health <= 0) {
+                        createExplosion(player.x, player.y, '#ff4400', 40); 
+                        playerDeathTimer = 45; 
+                    }
+                }
+            });
+        } else {
+            if (playerDeathTimer % 5 === 0) {
+                createExplosion(player.x + (Math.random() - 0.5) * 30, player.y + (Math.random() - 0.5) * 15, '#ffcc00', 6);
+            }
+            playerDeathTimer--;
+            if (playerDeathTimer === 0) {
+                checkAndUpdateHighScore();
+                gameState = 'GAMEOVER'; 
+            }
+        }
+    }
+
+    // Draw Layer Entities
+    activePickups.forEach(p => p.draw());
+    exhaustTrails.forEach(t => t.draw());
+    activePlanes.forEach(plane => plane.draw());
+    if (gameState === 'PLAYING') player.draw();
+    
+    playerProjectiles.forEach(p => p.draw());
+    enemyProjectiles.forEach(p => p.draw());
+    explosionParticles.forEach(p => p.draw());
+
+    ctx.restore(); // Terminate screen shake coordinates
+
+    drawLowHealthWarning();
+
+    // Render Static HUD Text Elements
+    drawSilverText();
+    
+    // DYNAMIC DISCORD VISIBILITY MATRIX CONTROLLER
+    const dCord = document.getElementById('discordLink');
+    
+    if (gameState === 'PLAYING') {
+        if (dCord) dCord.style.display = 'none'; // Clear from cockpit HUD while shooting
+        
+        drawScore();
+        drawMobileControls();
+        
+        ctx.save();
+        ctx.font = '14px Arial, sans-serif';
+        ctx.textAlign = 'right';
+        if (bulletUpgradeTimer > 0) {
+            ctx.fillStyle = '#ffff00';
+            ctx.fillText(`TWIN GUNS: ${Math.ceil(bulletUpgradeTimer / 60)}s`, canvas.width - 30, 75);
+        }
+        if (upgradedMissileStock > 0) {
+            ctx.fillStyle = '#ff00ff';
+            ctx.fillText(`NUKES ARMED: ${upgradedMissileStock}`, canvas.width - 30, 95);
+        }
+        ctx.restore();
+
+    } else if (gameState === 'START') {
+        if (dCord) dCord.style.display = 'flex'; // Display button on main landing cover
+        drawStartScreen();
+    } else if (gameState === 'GAMEOVER') {
+        if (dCord) dCord.style.display = 'flex'; // Display button on failure screen
+        bulletUpgradeTimer = 0;
+        upgradedMissileStock = 0;
+        activePickups = [];
+        drawGameOverScreen();
+    }
+
+    requestAnimationFrame(animate);
+}
+
+// ============================================================================
+// APPLICATION INITIALIZATION LAUNCH SWITCH
+// ============================================================================
+resizeCanvas();
+spawnSquadron();
+animate();
+</script>
 </body>
 </html>
