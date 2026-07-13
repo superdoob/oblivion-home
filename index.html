@@ -1,28 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-    <!-- Font handler-->
-    <link rel="preconnect" href="https://googleapis.com">
-    <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
-
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>〄ɓɭٱ۷ٱѻמ</title>
-
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            
+            /* TOUCH SELECTION BLOCKS: Completely disables magnifying glass and selection halos */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
         }
         body, html {
             width: 100%;
             height: 100%;
             overflow: hidden;
             background-color: #040406;
-            font-family: 'Orbitron', 'Arial Black', sans-serif;
+            font-family: 'Impact', 'Arial Black', sans-serif;
             touch-action: none;
         }
         canvas {
@@ -33,47 +35,85 @@
             height: 100%;
             z-index: 1;
         }
-        /* Sleek Floating Neon Discord Button */
-        .discord-btn {
+        
+        /* UNIFIED FLEX MENU WRAPPER CONTAINER */
+        .hud-overlay-container {
             position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10; /* Sits completely above the canvas layers */
-            background-color: #5865F2; /* Official Discord Blue */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none; /* Let gameplay passes pass straight through */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 30px;
+        }
+
+        /* UPGRADED FLEXBOX DISCORD BUTTON PROFILE */
+        .discord-btn {
+            background-color: #5865F2;
             color: #ffffff;
             text-decoration: none;
-            padding: 12px 30px;
-            font-size: 16px;
+            padding: 14px 28px;
+            font-size: 15px;
             font-weight: bold;
-            border-radius: 6px;
+            border-radius: 8px;
             letter-spacing: 1px;
             text-transform: uppercase;
             box-shadow: 0 0 15px rgba(88, 101, 242, 0.4);
             transition: all 0.2s ease-in-out;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            gap: 12px;
+            pointer-events: auto; /* Re-enable click tracks explicitly */
+            white-space: nowrap;  /* FIXED: Stops text from wrapping to a second line */
+            min-width: 220px;
         }
+        
+        .discord-btn svg {
+            flex-shrink: 0; /* FIXED: Stops the logo icon from shrinking when resized */
+            width: 22px;
+            height: 22px;
+        }
+
         .discord-btn:hover {
             box-shadow: 0 0 25px rgba(88, 101, 242, 0.8);
-            transform: translateX(-50%) scale(1.05);
+            transform: scale(1.04);
             background-color: #4752c4;
+        }
+
+        /* LANDSCAPE SPECIFIC MEDIA QUERY PARSING MATRIX */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .hud-overlay-container {
+                justify-content: flex-end;
+                align-items: flex-end; /* Shifts elements to the right edge */
+                padding: 20px;
+            }
+            .discord-btn {
+                min-width: 190px;
+                padding: 10px 20px;
+                font-size: 13px;
+                bottom: env(safe-area-inset-bottom);
+                right: env(safe-area-inset-right);
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Real HTML link overlay for smooth, secure browser navigation -->
-    <a href="https://discord.gg/jatCRGgGFF" target="_blank" id="discordLink" class="discord-btn">
-        <!-- SVG Discord Icon built directly into the text track -->
-        <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65.41,77.46a105.23,105.23,0,0,0,32,16.29,78.1,78.1,0,0,0,6.81-11.13,68.61,68.61,0,0,1-10.74-5.15c.91-.66,1.8-1.34,2.65-2a75.53,75.53,0,0,0,72,0c.85.69,1.74,1.37,2.65,2a68.42,68.42,0,0,1-10.74,5.14,77.76,77.76,0,0,0,6.83,11.13,104.87,104.87,0,0,0,32-16.29C129.24,48.43,123.47,25.65,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.92,46,53.68,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.16,46,95.92,53,91,65.69,84.69,65.69Z"/></svg>
-        Join Our Discord
-    </a>
+    <!-- Updated DOM layout wrapping structural nodes -->
+    <div class="hud-overlay-container" id="hudContainer">
+        <a href="https://discord.gg/jatCRGgGFF" target="_blank" id="discordLink" class="discord-btn">
+            <svg viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65.41,77.46a105.23,105.23,0,0,0,32,16.29,78.1,78.1,0,0,0,6.81-11.13,68.61,68.61,0,0,1-10.74-5.15c.91-.66,1.8-1.34,2.65-2a75.53,75.53,0,0,0,72,0c.85.69,1.74,1.37,2.65,2a68.42,68.42,0,0,1-10.74,5.14,77.76,77.76,0,0,0,6.83,11.13,104.87,104.87,0,0,0,32-16.29C129.24,48.43,123.47,25.65,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.92,46,53.68,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.16,46,95.92,53,91,65.69,84.69,65.69Z"/></svg>
+            Join Our Discord
+        </a>
+    </div>
 
     <canvas id="gameCanvas"></canvas>
-
-    
 
 
 
@@ -1633,6 +1673,49 @@ function animate() {
         activePickups = [];
         drawGameOverScreen();
     }
+
+/*
+                // ========================================================================
+            // PERFORMANCE MONITORING TELEMETRY SWITCH (TEMPORARY DEBUG)
+            // ========================================================================
+            if (gameState === 'PLAYING') {
+                ctx.save();
+                ctx.font = 'bold 12px monospace';
+                ctx.fillStyle = '#00ff00'; // Matrix Green for Diagnostics
+                ctx.textAlign = 'left';
+                
+                // Clear out shadow filters to keep text readable
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+
+                // Tabulate individual entity arrays
+                let pProjCount = playerProjectiles.length;
+                let eProjCount = enemyProjectiles.length;
+                let smokeCount = exhaustTrails.length;
+                let particleCount = explosionParticles.length;
+                let itemsCount = activePickups.length;
+                let totalActiveObjects = pProjCount + eProjCount + smokeCount + particleCount + itemsCount;
+
+                // Render metrics table in the top-left corner
+                let debugY = 40;
+                ctx.fillText(`--- ENGINE REAL-TIME TELEMETRY ---`, 20, debugY);
+                ctx.fillText(`PLAYER ORDINANCE : ${pProjCount}`, 20, debugY + 20);
+                ctx.fillText(`ENEMY ORDINANCE  : ${eProjCount}`, 20, debugY + 40);
+                ctx.fillText(`EXHAUST PARTICLES: ${smokeCount}`, 20, debugY + 60);
+                ctx.fillText(`EXPLOSION SPARKS : ${particleCount}`, 20, debugY + 80);
+                ctx.fillText(`FLOATING PICKUPS : ${itemsCount}`, 20, debugY + 100);
+                
+                // Highlight color warnings if memory leaks occur
+                if (totalActiveObjects > 400) {
+                    ctx.fillStyle = '#ff3333'; // Crimson alarm if allocation runs wild
+                } else if (totalActiveObjects > 200) {
+                    ctx.fillStyle = '#ffaa00'; // Amber warning
+                }
+                ctx.fillText(`TOTAL POOL ALLOC : ${totalActiveObjects}`, 20, debugY + 135);
+                ctx.restore();
+            }
+*/
 
     requestAnimationFrame(animate);
 }
