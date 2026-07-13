@@ -1521,7 +1521,7 @@ function animate() {
                     plane.health = 0;
                     screenShakeIntensity = 30;
                     playerDeathTimer = 45; 
-                    if (navigator.vibrate) navigator.vibrate();
+                    if (navigator.vibrate) navigator.vibrate(120);
                 }
 
                 playerProjectiles.forEach(proj => {
@@ -1560,7 +1560,7 @@ function animate() {
                         upgradedMissileStock += 5;
                         createExplosion(pod.x, pod.y, '#ff00ff', 15);
                     }
-                    if (navigator.vibrate) navigator.vibrate();
+                    if (navigator.vibrate) navigator.vibrate(80);
                 }
             });
 
@@ -1571,7 +1571,7 @@ function animate() {
                     proj.markedForRemoval = true;
                     createExplosion(proj.x, proj.y, '#ff3333', 12);
                     screenShakeIntensity = Math.max(screenShakeIntensity, 15);
-                    if (navigator.vibrate) navigator.vibrate(120);
+                    if (navigator.vibrate) navigator.vibrate(100);
 
                     if (player.health <= 0) {
                         createExplosion(player.x, player.y, '#ff4400', 40); 
