@@ -1443,6 +1443,14 @@ function drawSilverText() {
             if (gameState === 'START') {
                 const btnX = canvas.width / 2 - 100, btnY = canvas.height / 2 + 100;
                 if (clientX >= btnX && clientX <= btnX + 200 && clientY >= btnY && clientY <= btnY + 50) {
+                    
+                    //NEW: Fullscreen activation request
+                    // Automatically hides standard browser tabs and address bars on launch (not iphone)!
+                    const docEl = document.documentElement;
+                    if (docEl.requestFullscreen) docEl.requestFullscreen();
+                    else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen(); // Safari alternative
+                                     
+                    
                     resetFullEngine();
                     gameState = 'PLAYING';
                 }
