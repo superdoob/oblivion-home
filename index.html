@@ -1417,7 +1417,7 @@ function drawSilverText() {
         }
 
         // Global Event Router to catch clicks on HUD layout panels
-        window.addEventListener('click', (e) => {
+      /*  window.addEventListener('click', (e) => {
             const mX = e.clientX;
             const mY = e.clientY;
             
@@ -1435,6 +1435,37 @@ function drawSilverText() {
                 }
             }
         });
+*/
+        // Unified function to process button interactions safely on both mobile and desktop
+        function handleMenuSelection(clientX, clientY) {
+            if (gameState === 'START') {
+                const btnX = canvas.width / 2 - 100, btnY = canvas.height / 2 + 100;
+                if (clientX >= btnX && clientX <= btnX + 200 && clientY >= btnY && clientY <= btnY + 50) {
+                    resetFullEngine();
+                    gameState = 'PLAYING';
+                }
+            } else if (gameState === 'GAMEOVER') {
+                const btnX = canvas.width / 2 - 90, btnY = canvas.height / 2 + 80;
+                if (clientX >= btnX && clientX <= btnX + 180 && clientY >= btnY && clientY <= btnY + 45) {
+                    resetFullEngine();
+                    gameState = 'PLAYING';
+                }
+            }
+        }
+
+        // Catch desktop mouse clicks safely
+        window.addEventListener('click', (e) => {
+            handleMenuSelection(e.clientX, e.clientY);
+        });
+
+        // FIXED FOR IPHONE SAFARI: Also pass touch starts straight to the menu check handler
+        window.addEventListener('touchstart', (e) => {
+            if (gameState !== 'PLAYING') {
+                const touch = e.changedTouches[0];
+                handleMenuSelection(touch.clientX, touch.clientY);
+            }
+        });
+
 
         function resetFullEngine() {
             globalScore = 0;
