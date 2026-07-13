@@ -1084,89 +1084,51 @@ function drawLandscapeRanges() {
         function drawSilverText() {
             ctx.save();
             
-            // ========================================================================
-            // LINE 1: SPLIT-SYMMETRIC UNICODE TITLE (PERFECT CENTER ALIGNMENT)
-            // ========================================================================
             const titleFontSize = Math.max(26, canvas.width * 0.08);
             const textX = canvas.width / 2;
             const textY = canvas.height * 0.22;
             
-            // Split the tag into its geometric components
-            const leftWing   = "┈━═⇋";
-            const coreName   = "〄ɓɭٱ۷ٱѻמ";
-            const rightWing  = "⇌═━┈";
+            // Your complete squad tag rendered safely as a single centered block
+            const text = "┈━═⇋〄ɓɭٱ۷ٱѻמ⇌═━┈";
             
-            // Unified System Font Stack for stable character rendering
-            const fontStack = `bold ${titleFontSize}px "Segoe UI Symbol", "Apple Color Emoji", "Malgun Gothic", "Arial", sans-serif`;
-            ctx.font = fontStack;
-            ctx.textBaseline = 'middle'; // Forces browser to align elements by their true center line
+            // Fixed layout configurations for Firefox stability
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = `bold ${titleFontSize}px "Segoe UI Symbol", "Apple Color Emoji", "Malgun Gothic", "Arial", sans-serif`;
             
-            // Measure the exact pixel width of each section to calculate flawless spacing layout
-            const leftWidth  = ctx.measureText(leftWing).width;
-            const coreWidth  = ctx.measureText(coreName).width;
-            const rightWidth = ctx.measureText(rightWing).width;
+            const textWidth = ctx.measureText(text).width;
+            const gradStart = textX - textWidth / 2;
+            const gradEnd = textX + textWidth / 2;
             
-            const totalTitleWidth = leftWidth + coreWidth + rightWidth;
-            
-            // Calculate our absolute starting point on the left side of the canvas
-            let currentX = textX - (totalTitleWidth / 2);
-
-            // Shimmer Linear Gradient Animation Loop
             shimmerOffset += 0.006;
             if (shimmerOffset > 2) shimmerOffset = 0;
-            const silverGrad = ctx.createLinearGradient(currentX, 0, currentX + totalTitleWidth, 0);
+            
+            const silverGrad = ctx.createLinearGradient(gradStart, 0, gradEnd, 0);
             const pos = (val) => (val + shimmerOffset) % 2;
             const stops = [{p: 0.0, c: '#4a4a4a'}, {p: 0.2, c: '#b8b8b8'}, {p: 0.4, c: '#ffffff'}, {p: 0.5, c: '#e0e0e0'}, {p: 0.7, c: '#7a7a7a'}, {p: 1.0, c: '#4a4a4a'}];
             stops.forEach(stop => { let actualPos = pos(stop.p); if (actualPos <= 1) silverGrad.addColorStop(actualPos, stop.c); });
-
-            ctx.fillStyle = silverGrad;
+            
             ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-            ctx.shadowBlur = 25;
+            ctx.shadowBlur = 20;
             ctx.shadowOffsetX = 4;
-            ctx.shadowOffsetY = 8;
-
-            // --------------------------------------------------------------------
-            // MICRO-TUNING CONTROLLERS:
-            // Adjust these values (e.g., 1, 2, -1, -2) to nudge the side bars
-            // up or down by individual pixels until they line up flawlessly!
-            // --------------------------------------------------------------------
-            const leftWingYOffset = 1;  // Moves left lines down by 1 pixel
-            const rightWingYOffset = 1; // Moves right lines down by 1 pixel
-
-            // DRAW SECTION 1: Left Wing
-            ctx.textAlign = 'left';
-            // font for left
-            //ctx.font = `bold ${titleFontSize}px "Arial", "Arial Black", sans-serif`;
-
-            ctx.fillText(leftWing, currentX, textY + leftWingYOffset);
-            currentX += leftWidth; // Move pencil to the right
-
-            // DRAW SECTION 2: Core Squad Name (Perfect baseline center anchor)
-            ctx.fillText(coreName, currentX, textY);
-            currentX += coreWidth; // Move pencil to the right
-
-            // DRAW SECTION 3: Right Wing
-            ctx.fillText(rightWing, currentX, textY + rightWingYOffset);
-
-            // ========================================================================
-            // LINE 2: THE SUBTITLE DIVISION TAG
-            // ========================================================================
+            ctx.shadowOffsetY = 6;
+            
+            ctx.fillStyle = silverGrad;
+            ctx.fillText(text, textX, textY);
+            
+            // Subtitle
             const subtitleFontSize = Math.max(14, canvas.width * 0.015);
             const subtitleY = textY + (titleFontSize * 0.8) + 20;
-            const subtitleText = "[⇋〄⇌]";
+            const subtitleText = "[ OMINOUS DIVISION // GLOBAL CLAN ]";
             
-            //ctx.font = `bold ${subtitleFontSize}px "Impact", "Arial Black", sans-serif`;
-            ctx.font = `${subtitleFontSize}px "Arial", "Arial Black", sans-serif`;
-            ctx.fillStyle = '#00e5ff'; // Neon Cyan accent
-            
+            ctx.font = `bold ${subtitleFontSize}px "Impact", "Arial Black", sans-serif`;
+            ctx.fillStyle = '#00e5ff';
             ctx.shadowColor = '#00e5ff';
-            ctx.shadowBlur = 12;
+            ctx.shadowBlur = 10;
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
-            ctx.textAlign = 'center';
             
             ctx.fillText(subtitleText, textX, subtitleY);
-            
             ctx.restore();
         }
 
