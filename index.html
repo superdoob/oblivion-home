@@ -1541,6 +1541,11 @@ function animate() {
 
     // Live Combat Simulation Engine Block
     if (gameState === 'PLAYING' || playerDeathTimer > 0) {
+
+        if (bulletUpgradeTimer > 0) {
+            bulletUpgradeTimer--;
+        }
+
         if (playerDeathTimer === 0) {
             let visualTiltOffset = player.currentRoll * 7;
             exhaustTrails.push(new SmokePuff(player.x - player.width * 0.5, player.y + visualTiltOffset));
