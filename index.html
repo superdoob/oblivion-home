@@ -221,8 +221,42 @@
                 }
             }
         });
-
+/*
         window.addEventListener('touchend', (e) => {
+            if (e.touches.length === 0) {
+                input.joystick.active = false;
+                input.joystick.vx = 0;
+                input.joystick.vy = 0;
+                input.shootBullet = false;
+            }
+        });
+*/
+
+        // FIXED FOR MULTI-TOUCH STICKINESS: Identifies exactly which finger leaves the screen
+        window.addEventListener('touchend', (e) => {
+            // Loop through all fingers that just left the glass on this frame
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const t = e.changedTouches[i];
+                
+                // 1. If it was the joystick finger, immediately kill velocity forces
+                if (input.joystick.active) {
+                    // Check if the lifted touch matches our active joystick coordinates
+                    let distToJoystickStart = Math.hypot(t.clientX - input.joystick.startX, t.clientY - input.joystick.startY);
+                    if (distToJoystickStart < 80 || t.clientX < canvas.width / 2) {
+                        input.joystick.active = false;
+                        input.joystick.vx = 0;
+                        input.joystick.vy = 0;
+                    }
+                }
+                
+                // 2. If it was the bullet firing finger, stop the guns instantly
+                let distToBulletBtn = Math.hypot(t.clientX - touchButtons.bullet.x, t.clientY - touchButtons.bullet.y);
+                if (distToBulletBtn < touchButtons.bullet.radius + 15) {
+                    input.shootBullet = false;
+                }
+            }
+
+            // SAFETY NET: If absolutely all fingers leave the glass, wipe every state clean
             if (e.touches.length === 0) {
                 input.joystick.active = false;
                 input.joystick.vx = 0;
