@@ -647,6 +647,7 @@
 
         // WEATHER MATRIX SETUP
         let weatherRaindrops = [];
+        //maybe too much rain
         const MAX_RAIN_DROPLETS = 120; // Dense but highly optimized for mobile devices
 
         class RainDrop {
@@ -682,7 +683,7 @@
                 // PERFORMANCE PHYSICS: Multipliers map supersonic forward jet airspeed
                 this.speedY = 12 + Math.random() * 6; // Fast downward movement
                 this.speedX = -18 - Math.random() * 8; // Slanted backward movement matching flight momentum
-                
+                // Can make it 25 x 30 to make the rain bigger
                 this.length = 15 + Math.random() * 20; // Long, thin rainy streaks
                 this.alpha = 0.08 + Math.random() * 0.12; // FIXED DIMMING: Soft, semi-transparent overlay
             }
@@ -1459,7 +1460,27 @@ function drawLandscapeRanges() {
             shimmerOffset += 0.006;
             if (shimmerOffset > 2) shimmerOffset = 0;
             
-            const silverGrad = ctx.createLinearGradient(gradStart, 0, gradEnd, 0);
+            
+            // FIREFOX COMPATIBILITY GATING: Detect if the engine is running inside Mozilla Gecko
+            const isFirefox = typeof InstallTrigger !== 'undefined' || navigator.userAgent.toLowerCase().includes('firefox');
+            
+            if (isFirefox) {
+                // VERTICAL GRADIENT: Moves from top to bottom of the title font text height bounds.
+                // This completely bypasses Firefox's width-calculation bug, forcing it to draw 100% of the string!
+                silverGrad = ctx.createLinearGradient(0, textY - (titleFontSize * 0.5), 0, textY + (titleFontSize * 0.5));
+            } else {
+                // HORIZONTAL SHIMMER: Stays active for Chrome, Edge, and Safari
+                silverGrad = ctx.createLinearGradient(gradStart, 0, gradEnd, 0);
+            }
+            // end firefox, uncomment below if it fails
+            
+            //const silverGrad = ctx.createLinearGradient(gradStart, 0, gradEnd, 0);
+            
+            
+            
+            
+            
+            
             const pos = (val) => (val + shimmerOffset) % 2;
             const stops = [{p: 0.0, c: '#4a4a4a'}, {p: 0.2, c: '#b8b8b8'}, {p: 0.4, c: '#ffffff'}, {p: 0.5, c: '#e0e0e0'}, {p: 0.7, c: '#7a7a7a'}, {p: 1.0, c: '#4a4a4a'}];
             stops.forEach(stop => { let actualPos = pos(stop.p); if (actualPos <= 1) silverGrad.addColorStop(actualPos, stop.c); });
