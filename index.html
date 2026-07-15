@@ -1445,9 +1445,17 @@ function drawLandscapeRanges() {
             const textX = canvas.width / 2;
             const textY = canvas.height * 0.22;
             
-            // Your complete squad tag rendered safely as a single centered block
-            const text = "┈━═⇋〄ɓɭٱ۷ٱѻמ⇌═━┈";
+            //  squad tag rendered safely as a single centered block
+            // Detect if the engine is running inside Mozilla Gecko
+            const isFirefox = typeof InstallTrigger !== 'undefined' || navigator.userAgent.toLowerCase().includes('firefox');
             
+            //const text = "┈━═⇋〄ɓɭٱ۷ٱѻמ⇌═━┈";
+            
+            let text = "┈━═⇋〄ɓɭٱ۷ٱѻמ⇌═━┈";
+            if (isFirefox) {
+                text = "--==[ OBLIVION ]==--"; 
+            }
+
             // Fixed layout configurations for Firefox stability
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -1457,28 +1465,13 @@ function drawLandscapeRanges() {
             const gradStart = textX - textWidth / 2;
             const gradEnd = textX + textWidth / 2;
             
+            //shimmerOffset += 0.006;
+            //if (shimmerOffset > 2) shimmerOffset = 0;
             shimmerOffset += 0.006;
             if (shimmerOffset > 2) shimmerOffset = 0;
             
             
-            // FIREFOX COMPATIBILITY GATING: Detect if the engine is running inside Mozilla Gecko
-            const isFirefox = typeof InstallTrigger !== 'undefined' || navigator.userAgent.toLowerCase().includes('firefox');
-            
-            if (isFirefox) {
-                // VERTICAL GRADIENT: Moves from top to bottom of the title font text height bounds.
-                // This completely bypasses Firefox's width-calculation bug, forcing it to draw 100% of the string!
-                silverGrad = ctx.createLinearGradient(0, textY - (titleFontSize * 0.5), 0, textY + (titleFontSize * 0.5));
-            } else {
-                // HORIZONTAL SHIMMER: Stays active for Chrome, Edge, and Safari
-                silverGrad = ctx.createLinearGradient(gradStart, 0, gradEnd, 0);
-            }
-            // end firefox, uncomment below if it fails
-            
-            //const silverGrad = ctx.createLinearGradient(gradStart, 0, gradEnd, 0);
-            
-            
-            
-            
+            const silverGrad = ctx.createLinearGradient(gradStart, 0, gradEnd, 0);
             
             
             const pos = (val) => (val + shimmerOffset) % 2;
