@@ -1658,11 +1658,12 @@ function drawSilverText() {
             ctx.fillStyle = 'rgba(0, 0, 0, 0)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.font = '20px Arial, sans-serif';
-            ctx.fillStyle = '#a0a0aa';
-            ctx.textAlign = 'center';
-            ctx.fillText('MOVE: W,S,A,D  |  BULLET: SHIFT  |  MISSILE: /', canvas.width / 2, canvas.height / 2 + 50);
-
+            if(!input.isTouch){
+                ctx.font = '20px Arial, sans-serif';
+                ctx.fillStyle = '#a0a0aa';
+                ctx.textAlign = 'center';
+                ctx.fillText('MOVE: W,S,A,D  |  GUNS: SHIFT  |  MISSILES: /', canvas.width / 2, canvas.height / 2 + 50);
+            }
             // Button tracking coordinates
             const btnW = 200, btnH = 50;
             const btnX = canvas.width / 2 - btnW / 2, btnY = canvas.height / 2 + 100;
