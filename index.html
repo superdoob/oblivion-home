@@ -1663,6 +1663,13 @@ function drawSilverText() {
                 ctx.fillStyle = '#a0a0aa';
                 ctx.textAlign = 'center';
                 ctx.fillText('MOVE: W,S,A,D  |  GUNS: SHIFT  |  MISSILES: /', canvas.width / 2, canvas.height / 2 + 50);
+            } else {
+                // MOBILE / TOUCHSCREEN: Display streamlined virtual pad instructions
+                const controlFontSize = Math.max(13, canvas.width * 0.014);
+                ctx.font = `bold ${controlFontSize}px Arial, sans-serif`;
+                ctx.fillStyle = '#00e5ff'; // neon theme
+                
+                ctx.fillText("USE VIRTUAL JOYSTICK TO FLY", canvas.width / 2, canvas.height / 2 + 20);
             }
             // Button tracking coordinates
             const btnW = 200, btnH = 50;
