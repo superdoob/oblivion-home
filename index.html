@@ -477,10 +477,14 @@
             nukeMissile: new Image()
         };
 
+        //for testing
+        const debugBoxSvg = "<svg xmlns='http://w3.org' viewBox='0 0 50 50'><rect width='50' height='100' fill='%2300e5ff'/></svg>";
+        GAME_VECTORS.playerStraight.src = "data:image/svg+xml;utf8," + debugBoxSvg;
         // Construct high-fidelity raw vector templates directly inside secure base64 string caches
-        GAME_VECTORS.playerStraight.src = "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 100 60' width='100' height='60'><path d='M10,25 L35,25 L45,5 L55,5 L50,25 L85,25 L95,30 L85,35 L50,35 L55,55 L45,55 L35,35 L10,35 Z' fill='%23e0e0e0' stroke='%2300e5ff' stroke-width='1.5'/><circle cx='10' cy='30' r='4' fill='%2300e5ff'/></svg>";
-        GAME_VECTORS.playerUp.src       = "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 100 60' width='100' height='60'><path d='M10,20 L35,22 L42,3 L52,5 L48,24 L85,27 L95,30 L83,33 L46,31 L50,49 L40,47 L32,30 L10,28 Z' fill='%23f0f0f0' stroke='%2300e5ff' stroke-width='1.5'/><circle cx='10' cy='24' r='3' fill='%2300e5ff'/></svg>";
-        GAME_VECTORS.playerDown.src     = "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 100 60' width='100' height='60'><path d='M10,40 L35,38 L42,57 L52,55 L48,36 L85,33 L95,30 L83,27 L46,29 L50,11 L40,13 L32,30 L10,32 Z' fill='%23cccccc' stroke='%2300e5ff' stroke-width='1.5'/><circle cx='10' cy='36' r='3' fill='%2300e5ff'/></svg>";
+        //GAME_VECTORS.playerStraight.src = "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 100 60' width='100' height='60'><path d='M10,25 L35,25 L45,5 L55,5 L50,25 L85,25 L95,30 L85,35 L50,35 L55,55 L45,55 L35,35 L10,35 Z' fill='%23e0e0e0' stroke='%2300e5ff' stroke-width='1.5'/><circle cx='10' cy='30' r='4' fill='%2300e5ff'/></svg>";
+        //GAME_VECTORS.playerUp.src       = "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 100 60' width='100' height='60'><path d='M10,20 L35,22 L42,3 L52,5 L48,24 L85,27 L95,30 L83,33 L46,31 L50,49 L40,47 L32,30 L10,28 Z' fill='%23f0f0f0' stroke='%2300e5ff' stroke-width='1.5'/><circle cx='10' cy='24' r='3' fill='%2300e5ff'/></svg>";
+        //GAME_VECTORS.playerDown.src     = "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 100 60' width='100' height='60'><path d='M10,40 L35,38 L42,57 L52,55 L48,36 L85,33 L95,30 L83,27 L46,29 L50,11 L40,13 L32,30 L10,32 Z' fill='%23cccccc' stroke='%2300e5ff' stroke-width='1.5'/><circle cx='10' cy='36' r='3' fill='%2300e5ff'/></svg>";
+
 
         // Enemy Fighter Type 1 (Aggressive dark silhouette with deep red threat indicators)
         GAME_VECTORS.enemyStandard.src  = "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 90 50' width='90' height='50'><path d='M90,25 L60,20 L50,2 L40,2 L45,20 L15,20 L5,25 L15,30 L45,30 L40,48 L50,48 L60,30 Z' fill='%231a1a1f' stroke='%23ff3333' stroke-width='1.5'/><polygon points='80,23 90,25 80,27' fill='%23ff3333'/></svg>";
@@ -1268,7 +1272,8 @@
                     playerProjectiles.push(m);
                 }
             }
-
+            // old draw
+            
             draw() {
                 if (this.health <= 0) return; 
 
@@ -1326,6 +1331,47 @@
                     ctx.restore();
                 }
             }
+
+            // New svg draw SVG-IMPLEMENT
+            /*draw() {
+                ctx.save();
+                
+                // Choose the correct vector frame based on your active vertical input triggers
+                let activeVectorImg = GAME_VECTORS.playerStraight;
+                if (input.up) {
+                    activeVectorImg = GAME_VECTORS.playerUp;
+                } else if (input.down) {
+                    activeVectorImg = GAME_VECTORS.playerDown;
+                }
+
+                // High-Contrast Threat Highlights (Flashes amber when hit)
+                if (this.hasBeenHit) {
+                    ctx.shadowColor = '#ffea00';
+                    ctx.shadowBlur = 15;
+                    this.hasBeenHit = false; // Reset hit flag marker
+                }
+
+                     // Ensures the SVG code is fully processed and ready to scale before rendering
+                     if (activeVectorImg && activeVectorImg.complete && activeVectorImg.naturalWidth > 0) {
+                ctx.drawImage(
+                    activeVectorImg, 
+                    this.x - this.width / 2, 
+                    this.y - this.height / 2, 
+                    this.width, 
+                    this.height
+                );
+            } else {
+                // FALLBACK PLACEHOLDER: Draws a simple temporary box if the SVG takes a frame to compile
+                ctx.fillStyle = '#00e5ff';
+                ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+            }
+
+                ctx.restore();
+            }*/
+
+
+
+
         }
 
 
