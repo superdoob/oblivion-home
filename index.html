@@ -1660,10 +1660,16 @@ function drawSilverText() {
             ctx.textAlign = 'center';
             //ctx.fillStyle = '#ffffff';
             if(!input.isTouch){
-                ctx.font = '20px Arial, sans-serif';
-                ctx.fillStyle = '#a0a0aa';
-                ctx.textAlign = 'center';
-                ctx.fillText('MOVE: W,S,A,D  |  GUNS: SHIFT  |  MISSILES: /', canvas.width / 2, canvas.height / 2 + 50);
+                //ctx.font = '20px Arial, sans-serif';
+                //ctx.fillStyle = '#a0a0aa';
+                //ctx.textAlign = 'center';
+                //ctx.fillText('MOVE: W,S,A,D  |  GUNS: SHIFT  |  MISSILES: /', canvas.width / 2, canvas.height / 2 + 50);
+                // DESKTOP: Display classic flight controller shortcuts
+                const controlFontSize = Math.max(12, canvas.width * 0.012);
+                ctx.font = `${controlFontSize}px Arial, sans-serif`;
+                ctx.fillStyle = '#00e5ff'; // neon theme
+                ctx.fillText("[W,A,S,D] CONTROL JET", canvas.width / 2, canvas.height / 2 + 10);
+                ctx.fillText("[SHIFT] GUNS  ||  [/] MISSILES", canvas.width / 2, canvas.height / 2 + 35);
             } else {
                 // MOBILE / TOUCHSCREEN: Display streamlined virtual pad instructions
                 const controlFontSize = Math.max(13, canvas.width * 0.014);
@@ -1672,6 +1678,7 @@ function drawSilverText() {
                 
                 ctx.fillText("USE VIRTUAL JOYSTICK TO FLY", canvas.width / 2, canvas.height / 2 + 20);
             }
+
             // Button tracking coordinates
             const btnW = 200, btnH = 50;
             const btnX = canvas.width / 2 - btnW / 2, btnY = canvas.height / 2 + 100;
