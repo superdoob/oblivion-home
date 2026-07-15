@@ -146,9 +146,123 @@
                 right: env(safe-area-inset-right);
             }
         }
+
+
+
+
+                /* ======================================================================== */
+        /* LAYER 1B: SLICK BURGER MENU NAV LAYOUT (EXPANDABLE EDITION) */
+        /* ======================================================================== */
+        
+        /* The Trigger Button Container */
+        .burger-menu-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            z-index: 110; /* Highest priority visual level over all canvas maps */
+            cursor: pointer;
+            pointer-events: auto; /* Explicitly captures touches on mobile */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding: 8px;
+            background: rgba(4, 4, 6, 0.6);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .burger-menu-btn:hover {
+            border-color: #00e5ff;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+        }
+
+        /* Animated Burger Meat Stripes */
+        .burger-bar {
+            width: 100%;
+            height: 3px;
+            background-color: #00e5ff;
+            border-radius: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Morphing states when menu toggles open */
+        .burger-menu-btn.open .burger-bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .burger-menu-btn.open .burger-bar:nth-child(2) { opacity: 0; }
+        .burger-menu-btn.open .burger-bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        /* Frosted Glass Slide-out Drawer Panel */
+        .nav-drawer {
+            position: absolute;
+            top: 0;
+            left: -280px; /* Default hidden off-screen to the left */
+            width: 260px;
+            height: 100%;
+            z-index: 105;
+            background: rgba(4, 4, 6, 0.85);
+            backdrop-filter: blur(12px); /* High-tech translucent aero glass frost */
+            -webkit-backdrop-filter: blur(12px);
+            border-right: 1px solid rgba(0, 229, 255, 0.2);
+            padding: 90px 24px 30px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+        }
+
+        .nav-drawer.open {
+            left: 0; /* Smoothly slides into view */
+        }
+
+        /* Unified Expandable Link Blocks */
+        .nav-link {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 12px 16px;
+            border-left: 2px solid transparent;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 0 6px 6px 0;
+            transition: all 0.2s ease-in-out;
+            pointer-events: auto;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover {
+            color: #00e5ff;
+            background: rgba(0, 229, 255, 0.05);
+            border-left-color: #00e5ff;
+            padding-left: 22px; /* Subtle modern indentation slide effect */
+        }
+
     </style>
 </head>
 <body>
+
+    <!-- burger menu -->
+    <!-- THE TRIGGER BUTTON -->
+    <div class="burger-menu-btn" id="burgerBtn" onclick="toggleNavigationMenu(event)">
+        <div class="burger-bar"></div>
+        <div class="burger-bar"></div>
+        <div class="burger-bar"></div>
+    </div>
+
+    <!-- THE EXPANDABLE SLIDE OVERLAY PANEL -->
+    <div class="nav-drawer" id="navDrawer">
+        <!-- Easily add or duplicate rows here in the future -->
+        <a href="https://discord.gg" target="_blank" class="nav-link">Squad Intel / Discord</a>
+        <!-- <a href="#roster" class="nav-link">Division Roster</a> -->
+        <!-- <a href="#leaderboard" class="nav-link">Global Stats</a> -->
+    </div>
+
+
 
     <!-- Updated DOM layout wrapping structural nodes -->
     <div class="hud-overlay-container" id="hudContainer">
@@ -194,6 +308,51 @@
         // ============================================================================
         // LAYER 2: INTERACTIVE INPUT CONTROLS SYSTEM
         // ============================================================================
+        
+                // ============================================================================
+        // BURGER MENU CONTROLLER INTERSECT MODULE
+        // ============================================================================
+        let isNavMenuOpen = false;
+
+        function toggleNavigationMenu(event) {
+            if (event) {
+                event.stopPropagation(); // Prevents the click from triggering game commands underneath!
+            }
+            
+            const btn = document.getElementById('burgerBtn');
+            const drawer = document.getElementById('navDrawer');
+            
+            isNavMenuOpen = !isNavMenuOpen;
+            
+            if (isNavMenuOpen) {
+                btn.classList.add('open');
+                drawer.classList.add('open');
+                
+                // OPTIONAL STRATEGY: If game is active, trigger an input freeze while menu is examined
+                if (gameState === 'PLAYING') {
+                    input.up = input.down = input.left = input.right = input.shootBullet = false;
+                }
+            } else {
+                btn.classList.remove('open');
+                drawer.classList.remove('open');
+            }
+        }
+
+        // AUTO-CLOSE SAFETIES: If a user clicks outside the menu onto the canvas, close the drawer smoothly
+        window.addEventListener('click', () => {
+            if (isNavMenuOpen) toggleNavigationMenu();
+        });
+        window.addEventListener('touchstart', (e) => {
+            // Let touch close the menu safely if tapping outside the navigation boundary
+            if (isNavMenuOpen && e.touches[0].clientX > 260) {
+                toggleNavigationMenu();
+            }
+        });
+
+        
+        
+        
+        
         const input = {
             up: false, down: false, left: false, right: false,
             shootBullet: false, shootMissile: false,
@@ -266,16 +425,7 @@
                 }
             }
         });
-/*
-        window.addEventListener('touchend', (e) => {
-            if (e.touches.length === 0) {
-                input.joystick.active = false;
-                input.joystick.vx = 0;
-                input.joystick.vy = 0;
-                input.shootBullet = false;
-            }
-        });
-*/
+
 
         // FIXED FOR MULTI-TOUCH STICKINESS: Identifies exactly which finger leaves the screen
         window.addEventListener('touchend', (e) => {
@@ -485,6 +635,90 @@
         }
 
 
+        // ============================================================================
+        // LAYER 3: ATMOSPHERIC RAIN VECTOR ENGINE (REPLACES BACKDROP STARS)
+        // ============================================================================
+        //let playerProjectiles = [];
+        //let enemyProjectiles = [];
+        //let globalScore = 0;
+        //let gameState = 'START'; 
+
+        //let screenShakeIntensity = 0;
+
+        // WEATHER MATRIX SETUP
+        let weatherRaindrops = [];
+        const MAX_RAIN_DROPLETS = 120; // Dense but highly optimized for mobile devices
+
+        class RainDrop {
+            constructor() {
+                this.reset(true); // Initialize randomly across the full canvas area at launch
+            }
+
+            reset(isInitialSpawn = false) {
+                // If it's the initial game load, scatter drops randomly across the screen width and height
+                // Otherwise, respawn them completely off-screen at the top or right edges
+                //this.x = isInitialSpawn ? Math.random() * canvas.width : canvas.width + Math.random() * 200;
+                //this.y = isInitialSpawn ? Math.random() * canvas.height : -20;
+                
+                // If it's the very first game bootup, scatter drops completely over the full monitor grid
+                if (isInitialSpawn) {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                } else {
+                    // SCREEN-WIDE FIX: Randomly distribute half the drops to spawn from the top sky ceil, 
+                    // and the other half to spawn from the deep right edge. This spreads the sheets perfectly!
+                    if (Math.random() < 0.5) {
+                        this.x = Math.random() * canvas.width; // Anywhere across the width
+                        this.y = -30; // Dropping straight down from the clouds
+                    } else {
+                        this.x = canvas.width + Math.random() * 100; // Just past the right border
+                        this.y = Math.random() * (canvas.height * 0.7); // Anywhere on the upper vertical axis
+                    }
+                }
+
+
+
+
+                // PERFORMANCE PHYSICS: Multipliers map supersonic forward jet airspeed
+                this.speedY = 12 + Math.random() * 6; // Fast downward movement
+                this.speedX = -18 - Math.random() * 8; // Slanted backward movement matching flight momentum
+                
+                this.length = 15 + Math.random() * 20; // Long, thin rainy streaks
+                this.alpha = 0.08 + Math.random() * 0.12; // FIXED DIMMING: Soft, semi-transparent overlay
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Recycle droplets instantly when they pass the bottom or left screen view boundaries
+                if (this.y > canvas.height || this.x < -50) {
+                    this.reset(false);
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.strokeStyle = `rgba(0, 229, 255, ${this.alpha * 2.5})`; // Sleek storm-blue tinted precipitation
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                
+                // Draw slanted lines based on their downward and backward horizontal speed velocities
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x + this.speedX * 0.4, this.y + this.speedY * 0.4);
+                
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        // Initialize our persistent array layout loops right away
+        function setupAtmosphericWeather() {
+            weatherRaindrops = [];
+            for (let i = 0; i < MAX_RAIN_DROPLETS; i++) {
+                weatherRaindrops.push(new RainDrop());
+            }
+        }
 
 
 
@@ -1101,6 +1335,9 @@
             player = new PlayerPlane();
             
             //buildStarfield();
+
+            // make it rain
+            setupAtmosphericWeather();
             
             // Procedurally sketch out dark parallax mountain coordinates
             buildMountainRanges();
@@ -1589,13 +1826,21 @@ function animate() {
     // Draw Background Atmosphere Layers
     drawAmbientFlash();
     
+    // no stars any more
     backdropStars.forEach(star => {
         star.update();
         star.draw();
     });
 
+ 
+
     drawClouds(); 
     drawLandscapeRanges();
+
+    weatherRaindrops.forEach(drop => { 
+        drop.update(); 
+        drop.draw(); 
+    });
 
     if (Math.random() < 0.008 && lightning.length === 0) triggerLightning();
     for (let i = lightning.length - 1; i >= 0; i--) {
@@ -1808,6 +2053,21 @@ function animate() {
                 ctx.restore();
             }
 */
+            // ========================================================================
+            // WEATHER METRICS TELEMETRY TRACKER (TEMPORARY DIAGNOSTIC)
+            // ========================================================================
+            ctx.save();
+            ctx.font = 'bold 13px monospace';
+            ctx.fillStyle = '#00ffff'; // Neon Blue Diagnostic Text
+            ctx.textAlign = 'left';
+            ctx.shadowBlur = 0; // Clear any glow shadows
+            
+            // Count our dynamic weather raindrops array length safely
+            let activeDropsCount = (typeof weatherRaindrops !== 'undefined') ? weatherRaindrops.length : 0;
+            
+            // Render the readout in the upper left corner of your monitor screen
+            ctx.fillText(`WEATHER ENGINE ACTIVE RAINDROPS: ${activeDropsCount}`, 25, 25);
+            ctx.restore();
 
     requestAnimationFrame(animate);
 }
@@ -1816,6 +2076,7 @@ function animate() {
 // APPLICATION INITIALIZATION LAUNCH SWITCH
 // ============================================================================
 resizeCanvas();
+//setupAtmosphericWeather();
 spawnSquadron();
 animate();
 </script>
