@@ -1657,7 +1657,8 @@ function drawSilverText() {
             // Stays completely transparent so you can fully see the title and stars
             ctx.fillStyle = 'rgba(0, 0, 0, 0)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+            ctx.textAlign = 'center';
+            //ctx.fillStyle = '#ffffff';
             if(!input.isTouch){
                 ctx.font = '20px Arial, sans-serif';
                 ctx.fillStyle = '#a0a0aa';
